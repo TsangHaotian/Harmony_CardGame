@@ -57,6 +57,8 @@ struct About {
                 this.Entry('2048', '经典数字合并')
                 this.Entry('扫雷', '经典逻辑推理')
                 this.Entry('贪吃蛇', '经典贪吃游戏')
+                this.Entry('俄罗斯方块', '经典下落拼图')
+                this.Entry('打砖块', '经典弹球打砖')
                 this.Entry('赛车大赛', '躲避障碍物')
                 this.Entry('飞机大战', '射击敌机')
               }

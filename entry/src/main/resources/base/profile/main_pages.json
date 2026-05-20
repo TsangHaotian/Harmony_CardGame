@@ -5,6 +5,8 @@
     "pages/Minesweeper",
     "pages/PlaneBattle",
     "pages/Snake",
+    "pages/Tetris",
+    "pages/Breakout",
     "pages/CarRacer",
     "pages/About"
   ]

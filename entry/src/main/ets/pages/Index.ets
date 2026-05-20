@@ -22,6 +22,8 @@ struct Index {
     { title: '扫雷', page: 'pages/Minesweeper' },
     { title: '飞机大战', page: 'pages/PlaneBattle' },
     { title: '贪吃蛇', page: 'pages/Snake' },
+    { title: '俄罗斯方块', page: 'pages/Tetris' },
+    { title: '打砖块', page: 'pages/Breakout' },
     { title: '赛车大赛', page: 'pages/CarRacer' },
     { title: '关于', page: 'pages/About' }
   ];

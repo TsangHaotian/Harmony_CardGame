@@ -41,6 +41,8 @@ export default class EntryAbility extends UIAbility {
     PersistentStorage.persistProp('BestSnake', 0);
     PersistentStorage.persistProp('BestRacer', 0);
     PersistentStorage.persistProp('BestPlane', 0);
+    PersistentStorage.persistProp('BestTetris', 0);
+    PersistentStorage.persistProp('BestFlappy', 0);
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
