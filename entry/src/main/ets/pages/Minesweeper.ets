@@ -1,3 +1,11 @@
+import vibrator from '@ohos.vibrator';
+
+function vibrate(ms: number): void {
+  try {
+    vibrator.vibrate(ms);
+  } catch (_) {}
+}
+
 @Entry
 @Component
 struct Minesweeper {
@@ -133,9 +141,11 @@ struct Minesweeper {
       this.flagged[r][c] = !this.flagged[r][c];
       this.countFlags();
       this.syncFlat();
+      vibrate(10);
       return;
     }
     if (this.flagged[r][c]) {
+      vibrate(5);
       return;
     }
     if (this.firstClick) {
@@ -150,6 +160,7 @@ struct Minesweeper {
       }
     }
     if (this.cells[r][c] === 9) {
+      vibrate(300);
       this.revealed[r][c] = true;
       for (let rr = 0; rr < this.gridSize; rr++) {
         for (let cc = 0; cc < this.gridSize; cc++) {
@@ -166,6 +177,7 @@ struct Minesweeper {
     this.reveal(r, c);
     this.syncFlat();
     this.checkWin();
+    vibrate(8);
   }
 
   countFlags(): void {

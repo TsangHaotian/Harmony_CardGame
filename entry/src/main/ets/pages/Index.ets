@@ -55,6 +55,28 @@ struct Index {
           } catch (_) {}
         })
         .margin({ top: 20 })
+
+        Column() {
+          Text('打地鼠')
+            .fontSize(40)
+            .fontWeight(FontWeight.Bold)
+          Text('敲打冒头的地鼠！')
+            .fontSize(13)
+            .fontColor('#666666')
+            .margin({ top: 4 })
+        }
+        .width(280)
+        .height(120)
+        .backgroundColor('#C8A050')
+        .borderRadius(16)
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            this.getUIContext().getRouter().pushUrl({ url: 'pages/WhackAMole' });
+          } catch (_) {}
+        })
+        .margin({ top: 20 })
       }
 
       Blank()

@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "pages/Game2048",
-    "pages/Minesweeper"
+    "pages/Minesweeper",
+    "pages/WhackAMole"
   ]
 }

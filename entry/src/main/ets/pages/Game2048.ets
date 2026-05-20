@@ -1,3 +1,11 @@
+import vibrator from '@ohos.vibrator';
+
+function vibrate(ms: number): void {
+  try {
+    vibrator.vibrate(ms);
+  } catch (_) {}
+}
+
 @Entry
 @Component
 struct Game2048 {
@@ -188,17 +196,20 @@ struct Game2048 {
     }
 
     if (changed) {
+      vibrate(15);
       this.newTileIndex = -1;
       this.addRandomTile();
       this.syncFlatTiles();
 
       if (!this.hasWon && this.hasTileValue(2048)) {
         this.hasWon = true;
+        vibrate(200);
         setTimeout(() => {
           this.showOverlay = true;
         }, 200);
       }
       if (this.isGameOver()) {
+        vibrate(300);
         setTimeout(() => {
           this.showOverlay = true;
         }, 200);
