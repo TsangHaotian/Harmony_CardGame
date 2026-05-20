@@ -17,11 +17,11 @@ struct CarRacer {
   @State obstacles: number[][] = [];
   @StorageLink('BestRacer') bestScore: number = 0;
   @State lastScore: number = 0;
-  private roadWidth: number = 7;
-  private roadHeight: number = 14;
+  private roadWidth: number = 12;
+  private roadHeight: number = 24;
   private gameTimer: number = -1;
   private spawnTimer: number = -1;
-  private speed: number = 280;
+  private speed: number = 180;
 
   aboutToAppear(): void {
     this.startGame();
@@ -30,7 +30,7 @@ struct CarRacer {
   startGame(): void {
     this.score = 0;
     this.lastScore = 0;
-    this.playerCol = 3;
+    this.playerCol = 5;
     this.gameOver = false;
     this.showOverlay = false;
     this.obstacles = [];
@@ -51,6 +51,7 @@ struct CarRacer {
   spawnObstacle(): void {
     if (this.gameOver || this.showOverlay) { return; }
     let col = Math.floor(Math.random() * (this.roadWidth - 2)) + 1;
+    if (this.roadHeight <= 14) { col = Math.floor(Math.random() * (this.roadWidth - 2)) + 1; }
     this.obstacles.push([0, col]);
   }
 
@@ -78,25 +79,24 @@ struct CarRacer {
   }
 
   renderRoad(): void {
-    let r: number[] = [];
-    for (let i = 0; i < this.roadHeight * this.roadWidth; i++) { r.push(0); }
-    // Road with center line
+    let r: number[] = new Array(this.roadHeight * this.roadWidth).fill(0);
+    let mid = Math.floor((this.roadWidth - 1) / 2);
     for (let row = 0; row < this.roadHeight; row++) {
       for (let col = 0; col < this.roadWidth; col++) {
-        if (col === 3) {
-          r[row * this.roadWidth + col] = 3; // center line
+        if (col === 0 || col === this.roadWidth - 1) {
+          r[row * this.roadWidth + col] = 4; // shoulder
+        } else if (col === mid) {
+          r[row * this.roadWidth + col] = (row % 2 === 0) ? 3 : 2; // center line dashed
         } else {
           r[row * this.roadWidth + col] = 2; // road
         }
       }
     }
-    // obstacles
     for (let i = 0; i < this.obstacles.length; i++) {
       let row = this.obstacles[i][0];
       let col = this.obstacles[i][1];
       if (row >= 0 && row < this.roadHeight) { r[row * this.roadWidth + col] = 10; }
     }
-    // player
     let playerRow = this.roadHeight - 2;
     r[playerRow * this.roadWidth + this.playerCol] = 20;
     this.road = r;
@@ -112,6 +112,7 @@ struct CarRacer {
     if (this.playerCol < this.roadWidth - 2) { this.playerCol++; this.renderRoad(); vibrate(5); }
   }
 
+
   endGame(): void {
     this.gameOver = true;
     vibrate(300);
@@ -123,16 +124,20 @@ struct CarRacer {
   }
 
   cellBg(v: number): string {
-    if (v === 0 || v === 1 || v === 2 || v === 4) { return '#555555'; }
-    if (v === 3) { return '#AAAAAA'; }                       // center line
-    if (v >= 10 && v <= 13) { return '#CC4444'; }          // obstacle car (red)
-    if (v === 20) { return '#EEEEEE'; }                     // player car
+    if (v === 1) { return '#EEEEEE'; }
+    if (v === 2) { return '#555555'; }
+    if (v === 3) { return '#AAAAAA'; }
+    if (v === 4) { return '#333333'; }                       // shoulder
+    if (v >= 10 && v <= 13) { return '#CC4444'; }          // obstacle
+    if (v === 20) { return '#EEEEEE'; }                     // player
     return '#555555';
   }
 
   build() {
     Column() {
       Column() {
+        Scroll() {
+        Column() {
         Column() {
           Column() {
             // Scoreboard area (top)
@@ -179,8 +184,8 @@ struct CarRacer {
                   }
                 }, (index: number) => index.toString())
               }
-              .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr')
-              .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
               .columnsGap(0).rowsGap(0)
               .width('100%').height('100%')
 
@@ -197,12 +202,14 @@ struct CarRacer {
                 .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center).borderRadius(8)
               }
             }
-            .width('65%')
+            .width('80%')
+            .constraintSize({ maxHeight: 380 })
             .aspectRatio(0.5)
             .alignSelf(ItemAlign.Center)
           }
           .width('100%').backgroundColor('#1A1A2E').borderRadius(8)
           .height(450)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444').borderRadius(12).padding(8)
@@ -220,7 +227,9 @@ struct CarRacer {
 
         Text('HARMONY GB').fontSize(11).fontColor('#888888').margin({ bottom: 6 })
       }
-      .width('92%').layoutWeight(1).backgroundColor('#D4D0C8').borderRadius(24)
+      }
+      }
+      .width('92%').layoutWeight(1).constraintSize({ maxWidth: 540 }).backgroundColor('#D4D0C8').borderRadius(24)
     }
     .width('100%').height('100%').backgroundColor('#2B2B2B')
     .justifyContent(FlexAlign.Center).padding({ top: 40, bottom: 15 })

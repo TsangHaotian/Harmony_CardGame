@@ -16,6 +16,7 @@ class GameEntry {
 @Component
 struct Index {
   @State selectedIndex: number = 0;
+  private scroller: Scroller = new Scroller();
 
   private games: GameEntry[] = [
     { title: '2048', page: 'pages/Game2048' },
@@ -24,20 +25,39 @@ struct Index {
     { title: '贪吃蛇', page: 'pages/Snake' },
     { title: '俄罗斯方块', page: 'pages/Tetris' },
     { title: '打砖块', page: 'pages/Breakout' },
+    { title: '游戏1', page: 'pages/Game1' },
+    { title: '游戏2', page: 'pages/Game2' },
+    { title: '游戏3', page: 'pages/Game3' },
+    { title: '游戏4', page: 'pages/Game4' },
+    { title: '游戏5', page: 'pages/Game5' },
+    { title: '游戏6', page: 'pages/Game6' },
+    { title: '游戏7', page: 'pages/Game7' },
     { title: '赛车大赛', page: 'pages/CarRacer' },
     { title: '关于', page: 'pages/About' }
   ];
+
+  autoScroll(): void {
+    let itemH = 36;
+    let visible = 8;
+    if (this.selectedIndex >= visible) {
+      this.scroller.scrollTo({ xOffset: 0, yOffset: (this.selectedIndex - visible + 1) * itemH, animation: { duration: 100 } });
+    } else {
+      this.scroller.scrollTo({ xOffset: 0, yOffset: 0, animation: { duration: 100 } });
+    }
+  }
 
   moveUp(): void {
     if (this.selectedIndex > 0) {
       this.selectedIndex--;
       vibrate(8);
+      this.autoScroll();
     }
   }
 
   moveDown(): void {
     if (this.selectedIndex < this.games.length - 1) {
       this.selectedIndex++;
+      this.autoScroll();
       vibrate(8);
     }
   }
@@ -60,6 +80,8 @@ struct Index {
     Column() {
       // Console body
       Column() {
+        Scroll() {
+        Column() {
         // Screen bezel
         Column() {
           // Screen
@@ -75,7 +97,7 @@ struct Index {
             .width('100%')
             .margin({ bottom: 4 })
 
-            Scroll() {
+            Scroll(this.scroller) {
               Column() {
                 ForEach(this.games, (game: GameEntry, index: number) => {
                   this.GameListItem(game.title, index)
@@ -90,6 +112,7 @@ struct Index {
           .height(450)
           .backgroundColor('#1A1A2E')
           .borderRadius(8)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444')
@@ -122,8 +145,11 @@ struct Index {
       }
       .width('92%')
       .layoutWeight(1)
+      .constraintSize({ maxWidth: 540 })
       .backgroundColor('#D4D0C8')
       .borderRadius(24)
+    }
+    }
     }
     .width('100%')
     .height('100%')
@@ -182,13 +208,13 @@ struct Index {
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
 .offset({ x: -42 })
-      .onClick(() => { if (this.selectedIndex > 0) { this.selectedIndex = 0; vibrate(8); } })
+      .onClick(() => { if (this.selectedIndex > 0) { this.selectedIndex = 0; vibrate(8); this.autoScroll(); } })
       Button() {
         Image($r('app.media.icon_right')).width(60).height(60)
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
 .offset({ x: 42 })
-      .onClick(() => { if (this.selectedIndex < this.games.length - 1) { this.selectedIndex = this.games.length - 1; vibrate(8); } })
+      .onClick(() => { if (this.selectedIndex < this.games.length - 1) { this.selectedIndex = this.games.length - 1; vibrate(8); this.autoScroll(); } })
     }
     .width(140).height(140)
   }

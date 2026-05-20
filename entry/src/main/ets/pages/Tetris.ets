@@ -167,6 +167,8 @@ struct Tetris {
   build() {
     Column() {
       Column() {
+        Scroll() {
+        Column() {
         Column() {
           Column() {
             Column() {
@@ -242,6 +244,7 @@ struct Tetris {
             .layoutWeight(1)
           }
           .width('100%').height(450).backgroundColor('#1A1A2E').borderRadius(8)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444').borderRadius(12).padding(8)
@@ -259,7 +262,9 @@ struct Tetris {
 
         Text('HARMONY GB').fontSize(11).fontColor('#888888').margin({ bottom: 6 })
       }
-      .width('92%').layoutWeight(1).backgroundColor('#D4D0C8').borderRadius(24)
+      }
+      }
+      .width('92%').layoutWeight(1).constraintSize({ maxWidth: 540 }).backgroundColor('#D4D0C8').borderRadius(24)
     }
     .width('100%').height('100%').backgroundColor('#2B2B2B')
     .justifyContent(FlexAlign.Center).padding({ top: 40, bottom: 15 })

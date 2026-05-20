@@ -8,7 +8,7 @@ function vibrate(ms: number): void {
 
 @Entry
 @Component
-struct Breakout {
+struct Game5 {
   @State grid: number[] = [];
   @State ballX: number = 6;
   @State ballY: number = 18;

@@ -9,7 +9,7 @@ function vibrate(ms: number): void {
 @Entry
 @Component
 struct PlaneBattle {
-  @State playerCol: number = 3;
+  @State playerCol: number = 5;
   @State enemies: number[][] = [];
   @State bullets: number[][] = [];
   @State score: number = 0;
@@ -18,11 +18,11 @@ struct PlaneBattle {
   @State grid: number[] = [];
   @StorageLink('BestPlane') bestScore: number = 0;
   @State lastScore: number = 0;
-  private rows: number = 14;
-  private cols: number = 7;
+  private rows: number = 24;
+  private cols: number = 12;
   private gameTimer: number = -1;
   private spawnTimer: number = -1;
-  private speed: number = 350;
+  private speed: number = 200;
   private canShoot: boolean = true;
 
   aboutToAppear(): void {
@@ -32,7 +32,7 @@ struct PlaneBattle {
   startGame(): void {
     this.score = 0;
     this.lastScore = 0;
-    this.playerCol = 3;
+    this.playerCol = 5;
     this.gameOver = false;
     this.showOverlay = false;
     this.enemies = [];
@@ -171,6 +171,8 @@ struct PlaneBattle {
   build() {
     Column() {
       Column() {
+        Scroll() {
+        Column() {
         Column() {
           Column() {
             // Scoreboard area (top)
@@ -216,8 +218,8 @@ struct PlaneBattle {
                   }
                 }, (index: number) => index.toString())
               }
-              .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr')
-              .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
               .columnsGap(0).rowsGap(0)
               .width('100%').height('100%')
 
@@ -234,12 +236,14 @@ struct PlaneBattle {
                 .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center).borderRadius(8)
               }
             }
-            .width('65%')
+            .width('80%')
+            .constraintSize({ maxHeight: 380 })
             .aspectRatio(0.5)
             .alignSelf(ItemAlign.Center)
           }
           .width('100%').backgroundColor('#1A1A2E').borderRadius(8)
           .height(450)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444').borderRadius(12).padding(8)
@@ -257,7 +261,9 @@ struct PlaneBattle {
 
         Text('HARMONY GB').fontSize(11).fontColor('#888888').margin({ bottom: 6 })
       }
-      .width('92%').layoutWeight(1).backgroundColor('#D4D0C8').borderRadius(24)
+      }
+      }
+      .width('92%').layoutWeight(1).constraintSize({ maxWidth: 540 }).backgroundColor('#D4D0C8').borderRadius(24)
     }
     .width('100%').height('100%').backgroundColor('#2B2B2B')
     .justifyContent(FlexAlign.Center).padding({ top: 40, bottom: 15 })

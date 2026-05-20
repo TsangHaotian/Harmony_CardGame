@@ -331,6 +331,8 @@ struct Game2048 {
     Column() {
       // Console body
       Column() {
+        Scroll() {
+        Column() {
         // Screen bezel
         Column() {
           // Screen — game content (DO NOT CHANGE SIZE)
@@ -420,6 +422,7 @@ struct Game2048 {
               }
             }
             .width('100%')
+            .constraintSize({ maxHeight: 380 })
             .aspectRatio(1)
             .alignSelf(ItemAlign.Center)
           }
@@ -427,6 +430,7 @@ struct Game2048 {
           .height(450)
           .backgroundColor('#1A1A2E')
           .borderRadius(8)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444')
@@ -457,8 +461,11 @@ struct Game2048 {
       }
       .width('92%')
       .layoutWeight(1)
+      .constraintSize({ maxWidth: 540 })
       .backgroundColor('#D4D0C8')
       .borderRadius(24)
+    }
+    }
     }
     .width('100%')
     .height('100%')

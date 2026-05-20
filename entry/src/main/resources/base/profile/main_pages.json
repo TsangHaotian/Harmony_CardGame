@@ -7,6 +7,13 @@
     "pages/Snake",
     "pages/Tetris",
     "pages/Breakout",
+    "pages/Game1",
+    "pages/Game2",
+    "pages/Game3",
+    "pages/Game4",
+    "pages/Game5",
+    "pages/Game6",
+    "pages/Game7",
     "pages/CarRacer",
     "pages/About"
   ]

@@ -12,18 +12,20 @@ struct About {
   build() {
     Column() {
       Column() {
+        Scroll() {
+        Column() {
         Column() {
           Column() {
             // Title area
             Column() {
-              Text('CardGame').fontSize(18).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
+              Text('CardGame').fontSize(22).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
                 .width('100%').textAlign(TextAlign.Center).margin({ top: 6 })
 
               Row() {}.width('80%').height(1).backgroundColor('#333333')
                 .alignSelf(ItemAlign.Center)
                 .margin({ top: 6, bottom: 8 })
 
-              Text('版本 1.0.0').fontSize(12).fontColor('#8B8B9E').width('100%')
+              Text('版本 1.0.0').fontSize(14).fontColor('#8B8B9E').width('100%')
                 .textAlign(TextAlign.Center)
 
               Row() {}.width('60%').height(1).backgroundColor('#333333')
@@ -38,8 +40,9 @@ struct About {
               }
               .width('100%').justifyContent(FlexAlign.Center).margin({ top: 2, bottom: 6 })
 
+              Scroll() {
               Column() {
-                Text('— 操作说明 —').fontSize(10).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
+                Text('— 操作说明 —').fontSize(14).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
                   .width('100%').textAlign(TextAlign.Center).margin({ bottom: 5 })
 
                 this.Entry('START', '开始 / 重新开始')
@@ -51,7 +54,7 @@ struct About {
                 Row() {}.width('40%').height(1).backgroundColor('#333333')
                   .alignSelf(ItemAlign.Center).margin({ top: 6, bottom: 6 })
 
-                Text('— 游戏列表 —').fontSize(10).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
+                Text('— 游戏列表 —').fontSize(14).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
                   .width('100%').textAlign(TextAlign.Center).margin({ bottom: 5 })
 
                 this.Entry('2048', '经典数字合并')
@@ -59,21 +62,30 @@ struct About {
                 this.Entry('贪吃蛇', '经典贪吃游戏')
                 this.Entry('俄罗斯方块', '经典下落拼图')
                 this.Entry('打砖块', '经典弹球打砖')
+                this.Entry('游戏1', '预留新游戏')
+                this.Entry('游戏2', '预留新游戏')
+                this.Entry('游戏3', '预留新游戏')
+                this.Entry('游戏4', '预留新游戏')
+                this.Entry('游戏5', '预留新游戏')
+                this.Entry('游戏6', '预留新游戏')
+                this.Entry('游戏7', '预留新游戏')
                 this.Entry('赛车大赛', '躲避障碍物')
                 this.Entry('飞机大战', '射击敌机')
               }
               .width('100%')
+              }
+              .width('100%').layoutWeight(1)
 
               Blank()
 
               Column() {
                 Row() {
-                  Text('作者 ').fontSize(9).fontColor('#888888')
-                  Text('TsangHaotian').fontSize(9).fontColor('#4488CC').fontWeight(FontWeight.Bold)
+                  Text('作者 ').fontSize(12).fontColor('#888888')
+                  Text('TsangHaotian').fontSize(12).fontColor('#4488CC').fontWeight(FontWeight.Bold)
                 }
                 .width('100%').justifyContent(FlexAlign.Center)
 
-                Text('© 2026 Harmony GB · v1.0.0').fontSize(8).fontColor('#555555')
+                Text('© 2026 Harmony GB · v1.0.0').fontSize(12).fontColor('#555555')
                   .width('100%').textAlign(TextAlign.Center).margin({ top: 2 })
               }
               .width('100%')
@@ -85,6 +97,7 @@ struct About {
           .height(450)
           .backgroundColor('#1A1A2E')
           .borderRadius(8)
+          .clip(true)
           .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
         .backgroundColor('#444444').borderRadius(12).padding(8)
@@ -103,22 +116,24 @@ struct About {
 
         Text('HARMONY GB').fontSize(11).fontColor('#888888').margin({ bottom: 6 })
       }
-      .width('92%').layoutWeight(1).backgroundColor('#D4D0C8').borderRadius(24)
+      }
+      }
+      .width('92%').layoutWeight(1).constraintSize({ maxWidth: 540 }).backgroundColor('#D4D0C8').borderRadius(24)
     }
     .width('100%').height('100%').backgroundColor('#2B2B2B')
     .justifyContent(FlexAlign.Center).padding({ top: 40, bottom: 15 })
   }
 
   @Builder Pixel(c: string) {
-    Text(' ').fontSize(4).width(10).height(10).backgroundColor(c).borderRadius(2).margin({ left: 1, right: 1 })
+    Text(' ').fontSize(6).width(14).height(14).backgroundColor(c).borderRadius(3).margin({ left: 2, right: 2 })
   }
 
   @Builder Entry(key: string, desc: string) {
     Row() {
-      Text(key).fontSize(9).fontColor('#44DD44').fontWeight(FontWeight.Bold).width(44).textAlign(TextAlign.End)
-      Text('  ' + desc).fontSize(9).fontColor('#CCCCCC')
+      Text(key).fontSize(13).fontColor('#44DD44').fontWeight(FontWeight.Bold).width(60).textAlign(TextAlign.End)
+      Text('  ' + desc).fontSize(13).fontColor('#CCCCCC')
     }
-    .width('100%').padding({ top: 2, bottom: 2 }).margin({ left: 8 })
+    .width('100%').padding({ top: 3, bottom: 3 }).margin({ left: 8 })
   }
 
   @Builder DPadLayout() {
