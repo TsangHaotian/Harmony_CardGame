@@ -11,13 +11,15 @@ function vibrate(ms: number): void {
 struct Game2048 {
   @State flatTiles: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   @State score: number = 0;
-  @State bestScore: number = 0;
+  @StorageLink('Best2048') bestScore: number = 0;
   @State gameOver: boolean = false;
   @State hasWon: boolean = false;
   @State showOverlay: boolean = false;
   @State newTileIndex: number = -1;
   @State scorePop: boolean = false;
   @State lastScore: number = 0;
+  @State prevTiles: number[] = [];
+  @State prevScore: number = 0;
 
   private gridSize: number = 4;
   private tiles: number[][] = [
@@ -198,6 +200,8 @@ struct Game2048 {
     }
 
     if (changed) {
+      this.prevTiles = [...this.flatTiles];
+      this.prevScore = this.score;
       vibrate(15);
       this.newTileIndex = -1;
       this.addRandomTile();
@@ -519,7 +523,12 @@ struct Game2048 {
         Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
       .onClick(() => {
-        try { this.getUIContext().getRouter().back(); } catch (_) {}
+        if (this.prevTiles.length > 0 && !this.showOverlay) {
+          this.flatTiles = this.prevTiles;
+          this.score = this.prevScore;
+          this.prevTiles = [];
+          vibrate(10);
+        }
       })
 
       Stack() {
@@ -527,7 +536,12 @@ struct Game2048 {
         Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
       .margin({ left: 12 })
-      .onClick(() => { this.initGame(); })
+      .onClick(() => { this.initGame(); vibrate(15); })
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 0 })
+    PageTransitionExit({ duration: 0 })
   }
 }

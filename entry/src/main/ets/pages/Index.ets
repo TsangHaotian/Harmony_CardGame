@@ -20,8 +20,10 @@ struct Index {
   private games: GameEntry[] = [
     { title: '2048', page: 'pages/Game2048' },
     { title: '扫雷', page: 'pages/Minesweeper' },
+    { title: '飞机大战', page: 'pages/PlaneBattle' },
     { title: '贪吃蛇', page: 'pages/Snake' },
-    { title: '赛车大赛', page: 'pages/CarRacer' }
+    { title: '赛车大赛', page: 'pages/CarRacer' },
+    { title: '关于', page: 'pages/About' }
   ];
 
   moveUp(): void {
@@ -212,7 +214,7 @@ struct Index {
         Circle().width(56).height(56).fill('#4488CC')
         Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
-      .onClick(() => { this.goBack(); })
+      .onClick(() => { vibrate(10); })
 
       Stack() {
         Circle().width(64).height(64).fill('#CC4444')
@@ -221,5 +223,10 @@ struct Index {
       .margin({ left: 12 })
       .onClick(() => { this.selectGame(); })
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 0 })
+    PageTransitionExit({ duration: 0 })
   }
 }

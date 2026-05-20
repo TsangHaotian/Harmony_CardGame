@@ -8,20 +8,22 @@ function vibrate(ms: number): void {
 
 @Entry
 @Component
-struct CarRacer {
-  @State road: number[] = [];
-  @State playerCol: number = 2;
+struct PlaneBattle {
+  @State playerCol: number = 3;
+  @State enemies: number[][] = [];
+  @State bullets: number[][] = [];
   @State score: number = 0;
   @State gameOver: boolean = false;
   @State showOverlay: boolean = false;
-  @State obstacles: number[][] = [];
-  @StorageLink('BestRacer') bestScore: number = 0;
+  @State grid: number[] = [];
+  @StorageLink('BestPlane') bestScore: number = 0;
   @State lastScore: number = 0;
-  private roadWidth: number = 7;
-  private roadHeight: number = 14;
+  private rows: number = 14;
+  private cols: number = 7;
   private gameTimer: number = -1;
   private spawnTimer: number = -1;
-  private speed: number = 280;
+  private speed: number = 350;
+  private canShoot: boolean = true;
 
   aboutToAppear(): void {
     this.startGame();
@@ -33,83 +35,120 @@ struct CarRacer {
     this.playerCol = 3;
     this.gameOver = false;
     this.showOverlay = false;
-    this.obstacles = [];
-    this.speed = 280;
-    this.buildRoad();
-    if (this.gameTimer > 0) { clearInterval(this.gameTimer); }
-    if (this.spawnTimer > 0) { clearInterval(this.spawnTimer); }
+    this.enemies = [];
+    this.bullets = [];
+    this.speed = 350;
+    this.canShoot = true;
+    this.buildGrid();
+    if (this.gameTimer > 0) { clearInterval(this.gameTimer); this.gameTimer = -1; }
+    if (this.spawnTimer > 0) { clearInterval(this.spawnTimer); this.spawnTimer = -1; }
     this.gameTimer = setInterval(() => { this.tick(); }, this.speed);
-    this.spawnTimer = setInterval(() => { this.spawnObstacle(); }, 1000);
+    this.spawnTimer = setInterval(() => { this.spawnEnemy(); }, 1500);
   }
 
-  buildRoad(): void {
-    let r: number[] = [];
-    for (let i = 0; i < this.roadHeight * this.roadWidth; i++) { r.push(0); }
-    this.road = r;
+  buildGrid(): void {
+    let g: number[] = [];
+    for (let i = 0; i < this.rows * this.cols; i++) { g.push(0); }
+    this.grid = g;
   }
 
-  spawnObstacle(): void {
+  spawnEnemy(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    let col = Math.floor(Math.random() * (this.roadWidth - 2)) + 1;
-    this.obstacles.push([0, col]);
+    let count = Math.random() < 0.4 ? 2 : 1;
+    for (let i = 0; i < count; i++) {
+      let col = Math.floor(Math.random() * this.cols);
+      this.enemies.push([0, col]);
+    }
   }
 
   tick(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    for (let i = this.obstacles.length - 1; i >= 0; i--) {
-      this.obstacles[i][0]++;
-      if (this.obstacles[i][0] >= this.roadHeight) {
-        this.obstacles.splice(i, 1);
-        this.score++;
-        if (this.score % 5 === 0 && this.speed > 120) {
-          this.speed -= 15;
-          if (this.gameTimer > 0) { clearInterval(this.gameTimer); }
-          this.gameTimer = setInterval(() => { this.tick(); }, this.speed);
+    // Move enemies down
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      this.enemies[i][0]++;
+      if (this.enemies[i][0] >= this.rows) {
+        this.enemies.splice(i, 1);
+      }
+    }
+    // Move bullets up & check collision along path
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
+      let prevRow = this.bullets[i][0];
+      this.bullets[i][0]--;
+      let newRow = this.bullets[i][0];
+      if (newRow < 0) {
+        this.bullets.splice(i, 1);
+        continue;
+      }
+      // Check enemy in the path (prevRow or newRow)
+      for (let ei = this.enemies.length - 1; ei >= 0; ei--) {
+        if (this.bullets[i][1] === this.enemies[ei][1] &&
+            (this.enemies[ei][0] === prevRow || this.enemies[ei][0] === newRow)) {
+          this.bullets.splice(i, 1);
+          this.enemies.splice(ei, 1);
+          this.score += 10;
+          vibrate(15);
+          break;
         }
       }
     }
-    for (let i = 0; i < this.obstacles.length; i++) {
-      if (this.obstacles[i][0] >= this.roadHeight - 2 && this.obstacles[i][1] === this.playerCol) {
+    // Enemy-player collision
+    let playerRow = this.rows - 2;
+    for (let i = 0; i < this.enemies.length; i++) {
+      if (this.enemies[i][0] === playerRow && this.enemies[i][1] === this.playerCol) {
         this.endGame();
         return;
       }
     }
-    this.renderRoad();
-  }
-
-  renderRoad(): void {
-    let r: number[] = [];
-    for (let i = 0; i < this.roadHeight * this.roadWidth; i++) { r.push(0); }
-    // Road with center line
-    for (let row = 0; row < this.roadHeight; row++) {
-      for (let col = 0; col < this.roadWidth; col++) {
-        if (col === 3) {
-          r[row * this.roadWidth + col] = 3; // center line
-        } else {
-          r[row * this.roadWidth + col] = 2; // road
-        }
+    // Enemy passed bottom — remove it, no penalty
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      if (this.enemies[i][0] >= this.rows - 1) {
+        this.enemies.splice(i, 1);
       }
     }
-    // obstacles
-    for (let i = 0; i < this.obstacles.length; i++) {
-      let row = this.obstacles[i][0];
-      let col = this.obstacles[i][1];
-      if (row >= 0 && row < this.roadHeight) { r[row * this.roadWidth + col] = 10; }
+    this.renderGrid();
+  }
+
+  renderGrid(): void {
+    let g: number[] = new Array(this.rows * this.cols).fill(0);
+    // Enemies
+    for (let i = 0; i < this.enemies.length; i++) {
+      let row = this.enemies[i][0];
+      let col = this.enemies[i][1];
+      if (row >= 0 && row < this.rows) { g[row * this.cols + col] = 2; }
     }
-    // player
-    let playerRow = this.roadHeight - 2;
-    r[playerRow * this.roadWidth + this.playerCol] = 20;
-    this.road = r;
+    // Bullets
+    for (let i = 0; i < this.bullets.length; i++) {
+      let row = this.bullets[i][0];
+      let col = this.bullets[i][1];
+      if (row >= 0 && row < this.rows && g[row * this.cols + col] === 0) {
+        g[row * this.cols + col] = 3;
+      }
+    }
+    // Player
+    let playerRow = this.rows - 2;
+    g[playerRow * this.cols + this.playerCol] = 1;
+    this.grid = g;
   }
 
   moveLeft(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol > 1) { this.playerCol--; this.renderRoad(); vibrate(5); }
+    if (this.playerCol > 0) { this.playerCol--; this.renderGrid(); vibrate(5); }
   }
 
   moveRight(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol < this.roadWidth - 2) { this.playerCol++; this.renderRoad(); vibrate(5); }
+    if (this.playerCol < this.cols - 1) { this.playerCol++; this.renderGrid(); vibrate(5); }
+  }
+
+  shoot(): void {
+    if (this.gameOver || this.showOverlay) { return; }
+    if (!this.canShoot) { return; }
+    this.canShoot = false;
+    let bulletRow = this.rows - 3;
+    this.bullets.push([bulletRow, this.playerCol]);
+    this.renderGrid();
+    vibrate(8);
+    setTimeout(() => { this.canShoot = true; }, 200);
   }
 
   endGame(): void {
@@ -123,11 +162,10 @@ struct CarRacer {
   }
 
   cellBg(v: number): string {
-    if (v === 0 || v === 1 || v === 2 || v === 4) { return '#555555'; }
-    if (v === 3) { return '#AAAAAA'; }                       // center line
-    if (v >= 10 && v <= 13) { return '#CC4444'; }          // obstacle car (red)
-    if (v === 20) { return '#EEEEEE'; }                     // player car
-    return '#555555';
+    if (v === 1) { return '#44DD44'; }    // player (green)
+    if (v === 2) { return '#DD4444'; }    // enemy (red)
+    if (v === 3) { return '#FFDD44'; }    // bullet (yellow)
+    return '#1A1A2E';                     // empty (dark)
   }
 
   build() {
@@ -138,7 +176,7 @@ struct CarRacer {
             // Scoreboard area (top)
             Column() {
               Row() {
-                Text('赛车大赛').fontSize(16).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
+                Text('飞机大战').fontSize(16).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
                 Blank()
                 Text('得分: ' + this.score.toString()).fontSize(12).fontColor('#8B8B9E')
               }
@@ -161,13 +199,12 @@ struct CarRacer {
             // Game grid (bottom)
             Stack() {
               Grid() {
-                ForEach(this.road, (v: number, index: number) => {
+                ForEach(this.grid, (v: number, index: number) => {
                   GridItem() {
                     Stack() {
-                      if (v === 20) {
-                        // Player car — simple triangle/arrow shape
+                      if (v === 1) {
                         Row() {
-                          Text('▲').fontSize(11).fontColor('#333333').fontWeight(FontWeight.Bold)
+                          Text('▲').fontSize(11).fontColor('#003300').fontWeight(FontWeight.Bold)
                         }
                         .width('100%').height('100%')
                         .justifyContent(FlexAlign.Center).alignItems(VerticalAlign.Center)
@@ -175,7 +212,7 @@ struct CarRacer {
                     }
                     .width('100%').height('100%')
                     .backgroundColor(this.cellBg(v))
-                    .borderRadius(v >= 10 ? 4 : 0)
+                    .borderRadius(v === 2 ? 6 : v === 1 ? 2 : 0)
                   }
                 }, (index: number) => index.toString())
               }
@@ -186,7 +223,7 @@ struct CarRacer {
 
               if (this.showOverlay) {
                 Column() {
-                  Text('撞车了！').fontSize(28).fontWeight(FontWeight.Bold).fontColor('#FFFFFF')
+                  Text('坠毁了！').fontSize(28).fontWeight(FontWeight.Bold).fontColor('#FFFFFF')
                   Text('得分: ' + this.score.toString()).fontSize(20).fontColor('#FF6B35').margin({ top: 8 })
                   Button() { Text('再来一局').fontSize(14).fontColor('#F9F6F2') }
                   .backgroundColor('#8F7A66').borderRadius(6).margin({ top: 12 })
@@ -262,20 +299,10 @@ struct CarRacer {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => {
-        if (!this.gameOver && !this.showOverlay) {
-          this.moveLeft();
-          vibrate(8);
-        }
-      })
+      .onClick(() => { vibrate(10); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
-      .onClick(() => {
-        if (!this.gameOver && !this.showOverlay) {
-          this.moveRight();
-          vibrate(8);
-        }
-      })
+      .onClick(() => { this.shoot(); vibrate(10); })
     }
   }
 

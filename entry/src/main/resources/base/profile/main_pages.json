@@ -3,7 +3,9 @@
     "pages/Index",
     "pages/Game2048",
     "pages/Minesweeper",
+    "pages/PlaneBattle",
     "pages/Snake",
-    "pages/CarRacer"
+    "pages/CarRacer",
+    "pages/About"
   ]
 }

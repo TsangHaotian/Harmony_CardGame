@@ -22,7 +22,7 @@ struct Minesweeper {
   @State flagMode: boolean = false;
   @State cursorRow: number = 0;
   @State cursorCol: number = 0;
-  @State bestScore: number = 0;
+  @StorageLink('BestMine') bestScore: number = 0;
   @State lastScore: number = 0;
 
   private gridSize: number = 9;
@@ -374,5 +374,10 @@ struct Minesweeper {
         this.handleClick(idx);
       })
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 0 })
+    PageTransitionExit({ duration: 0 })
   }
 }

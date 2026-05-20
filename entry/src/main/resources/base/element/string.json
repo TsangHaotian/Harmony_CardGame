@@ -10,11 +10,11 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "CardGame"
     },
     {
       "name": "app_name",
-      "value": "Mini Games"
+      "value": "CardGame"
     },
     {
       "name": "Game2048_title",
@@ -47,6 +47,18 @@
     {
       "name": "Game2048_hint",
       "value": "Swipe to move tiles"
+    },
+    {
+      "name": "widget_label",
+      "value": "Game Widget"
+    },
+    {
+      "name": "widget_desc",
+      "value": "Play 2048 and Minesweeper on your desktop"
+    },
+    {
+      "name": "widget_display_name",
+      "value": "CardGame"
     }
   ]
 }

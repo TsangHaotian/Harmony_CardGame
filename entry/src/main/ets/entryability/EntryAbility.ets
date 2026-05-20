@@ -36,6 +36,12 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'testTag', 'Window config error: %{public}s', JSON.stringify(err));
     }
 
+    PersistentStorage.persistProp('Best2048', 0);
+    PersistentStorage.persistProp('BestMine', 0);
+    PersistentStorage.persistProp('BestSnake', 0);
+    PersistentStorage.persistProp('BestRacer', 0);
+    PersistentStorage.persistProp('BestPlane', 0);
+
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));

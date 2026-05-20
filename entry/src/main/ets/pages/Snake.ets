@@ -16,7 +16,7 @@ struct Snake {
   @State showOverlay: boolean = false;
   @State paused: boolean = false;
   @State flatCells: number[] = [];
-  @State bestScore: number = 0;
+  @StorageLink('BestSnake') bestScore: number = 0;
   @State lastScore: number = 0;
 
   private gridSize: number = 12;
@@ -251,13 +251,21 @@ struct Snake {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => {
-        if (this.gameTimer > 0) { clearInterval(this.gameTimer); }
-        try { this.getUIContext().getRouter().back(); } catch (_) {}
-      })
+      .onClick(() => { this.paused = !this.paused; vibrate(10); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
-      .onClick(() => { this.paused = !this.paused; })
+      .onClick(() => {
+        if (!this.gameOver && !this.showOverlay && this.gameTimer > 0) {
+          clearInterval(this.gameTimer);
+          this.gameTimer = setInterval(() => { this.tick(); }, 80);
+          vibrate(15);
+        }
+      })
     }
+  }
+
+  pageTransition() {
+    PageTransitionEnter({ duration: 0 })
+    PageTransitionExit({ duration: 0 })
   }
 }

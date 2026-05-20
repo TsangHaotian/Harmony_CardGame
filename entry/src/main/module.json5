@@ -22,7 +22,7 @@
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
-        "icon": "$media:layered_image",
+        "icon": "$media:startIcon",
         "label": "$string:EntryAbility_label",
         "startWindowIcon": "$media:startIcon",
         "startWindowBackground": "$color:start_window_background",
@@ -51,6 +51,25 @@
             "resource": "$profile:backup_config"
           }
         ],
+      },
+      {
+        "name": "WidgetAbility",
+        "srcEntry": "./ets/widgetability/WidgetAbility.ets",
+        "label": "$string:widget_label",
+        "description": "$string:widget_desc",
+        "type": "form",
+        "exported": true,
+        "skills": [
+          {
+            "entities": ["entity.system.default"]
+          }
+        ],
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
+          }
+        ]
       }
     ]
   }

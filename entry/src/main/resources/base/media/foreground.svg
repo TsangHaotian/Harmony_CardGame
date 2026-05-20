@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Background: dark gray -->
+  <rect x="0" y="0" width="256" height="256" rx="32" fill="#2B2B2B"/>
+  <!-- Console body -->
+  <rect x="28" y="48" width="200" height="160" rx="16" fill="#D4D0C8"/>
+  <!-- Inner screen bezel -->
+  <rect x="44" y="64" width="168" height="72" rx="8" fill="#444444"/>
+  <!-- Screen -->
+  <rect x="52" y="72" width="152" height="56" rx="4" fill="#1A1A2E"/>
+  <!-- Game elements on screen - simplified grid -->
+  <rect x="112" y="86" width="8" height="8" fill="#44DD44"/>
+  <rect x="120" y="86" width="8" height="8" fill="#44DD44"/>
+  <rect x="128" y="86" width="8" height="8" fill="#44DD44"/>
+  <rect x="104" y="94" width="8" height="8" fill="#44DD44"/>
+  <rect x="136" y="94" width="8" height="8" fill="#44DD44"/>
+  <rect x="112" y="102" width="8" height="8" fill="#44DD44"/>
+  <rect x="128" y="102" width="8" height="8" fill="#44DD44"/>
+  <rect x="120" y="94" width="8" height="8" fill="#DD4444"/>
+  <!-- D-Pad -->
+  <circle cx="96" cy="170" r="24" fill="#555555"/>
+  <rect x="92" y="158" width="8" height="24" rx="2" fill="#CCCCCC"/>
+  <rect x="84" y="166" width="24" height="8" rx="2" fill="#CCCCCC"/>
+  <!-- B button -->
+  <circle cx="158" cy="176" r="14" fill="#4488CC"/>
+  <text x="158" y="181" text-anchor="middle" font-size="12" fill="#FFFFFF" font-weight="bold">B</text>
+  <!-- A button -->
+  <circle cx="190" cy="168" r="16" fill="#CC4444"/>
+  <text x="190" y="173" text-anchor="middle" font-size="14" fill="#FFFFFF" font-weight="bold">A</text>
+  <!-- START button -->
+  <rect x="115" y="188" width="26" height="8" rx="4" fill="#CC4444"/>
+  <!-- Label -->
+  <text x="128" y="222" text-anchor="middle" font-size="12" fill="#888888" font-weight="bold">CARD GAME</text>
+</svg>
