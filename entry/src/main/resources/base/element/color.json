@@ -2,7 +2,43 @@
   "color": [
     {
       "name": "start_window_background",
-      "value": "#FFFFFF"
+      "value": "#00000000"
+    },
+    {
+      "name": "game_bg",
+      "value": "#FAF8EF"
+    },
+    {
+      "name": "game_grid_bg",
+      "value": "#BBADA0"
+    },
+    {
+      "name": "game_empty_cell",
+      "value": "#CDC1B4"
+    },
+    {
+      "name": "game_text_dark",
+      "value": "#776E65"
+    },
+    {
+      "name": "game_text_light",
+      "value": "#F9F6F2"
+    },
+    {
+      "name": "game_button_bg",
+      "value": "#8F7A66"
+    },
+    {
+      "name": "game_overlay_bg",
+      "value": "#BAEEE4DA"
+    },
+    {
+      "name": "index_bg",
+      "value": "#FAF8EF"
+    },
+    {
+      "name": "index_title",
+      "value": "#333333"
     }
   ]
 }

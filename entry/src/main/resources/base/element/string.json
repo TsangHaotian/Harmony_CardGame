@@ -11,6 +11,42 @@
     {
       "name": "EntryAbility_label",
       "value": "label"
+    },
+    {
+      "name": "app_name",
+      "value": "Mini Games"
+    },
+    {
+      "name": "Game2048_title",
+      "value": "2048"
+    },
+    {
+      "name": "Game2048_score",
+      "value": "SCORE"
+    },
+    {
+      "name": "Game2048_best",
+      "value": "BEST"
+    },
+    {
+      "name": "Game2048_new_game",
+      "value": "New"
+    },
+    {
+      "name": "Game2048_game_over",
+      "value": "Game Over!"
+    },
+    {
+      "name": "Game2048_win",
+      "value": "You Win!"
+    },
+    {
+      "name": "Game2048_try_again",
+      "value": "Try Again"
+    },
+    {
+      "name": "Game2048_hint",
+      "value": "Swipe to move tiles"
     }
   ]
 }

@@ -1,5 +1,7 @@
 {
   "src": [
-    "pages/Index"
+    "pages/Index",
+    "pages/Game2048",
+    "pages/Minesweeper"
   ]
 }

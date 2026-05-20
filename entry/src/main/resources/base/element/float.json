@@ -3,6 +3,34 @@
     {
       "name": "page_text_font_size",
       "value": "50fp"
+    },
+    {
+      "name": "game_grid_gap",
+      "value": "8vp"
+    },
+    {
+      "name": "game_grid_padding",
+      "value": "8vp"
+    },
+    {
+      "name": "game_tile_font_large",
+      "value": "36fp"
+    },
+    {
+      "name": "game_tile_font_medium",
+      "value": "28fp"
+    },
+    {
+      "name": "game_tile_font_small",
+      "value": "22fp"
+    },
+    {
+      "name": "game_tile_font_xs",
+      "value": "18fp"
+    },
+    {
+      "name": "index_title_font",
+      "value": "36fp"
     }
   ]
 }
