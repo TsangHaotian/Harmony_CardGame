@@ -17,6 +17,7 @@ struct Game2048 {
   @State showOverlay: boolean = false;
   @State newTileIndex: number = -1;
   @State scorePop: boolean = false;
+  @State lastScore: number = 0;
 
   private gridSize: number = 4;
   private tiles: number[][] = [
@@ -40,6 +41,7 @@ struct Game2048 {
       }
     }
     this.score = 0;
+    this.lastScore = 0;
     this.gameOver = false;
     this.hasWon = false;
     this.showOverlay = false;
@@ -209,6 +211,8 @@ struct Game2048 {
         }, 200);
       }
       if (this.isGameOver()) {
+        this.lastScore = this.score;
+        if (this.score > this.bestScore) { this.bestScore = this.score; }
         vibrate(300);
         setTimeout(() => {
           this.showOverlay = true;
@@ -321,168 +325,209 @@ struct Game2048 {
 
   build() {
     Column() {
-      // top spacer
-      Blank()
-
-      // Top bar
-      Row() {
-        Button() {
-          Text('← 返回')
-            .fontSize(16)
-            .fontColor('#776E65')
-        }
-        .backgroundColor('transparent')
-        .onClick(() => {
-          try {
-            this.getUIContext().getRouter().back();
-          } catch (_) {}
-        })
-
-        Text('2048')
-          .fontSize(28)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#776E65')
-
-        Button() {
-          Text('新局')
-            .fontSize(16)
-            .fontColor('#F9F6F2')
-        }
-        .backgroundColor('#8F7A66')
-        .borderRadius(8)
-        .width(72)
-        .height(40)
-        .onClick(() => {
-          this.initGame();
-        })
-      }
-      .width('100%')
-      .justifyContent(FlexAlign.SpaceBetween)
-      .alignItems(VerticalAlign.Center)
-      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-
-      // Score row
-      Row() {
-        Stack() {
+      // Console body
+      Column() {
+        // Screen bezel
+        Column() {
+          // Screen — game content (DO NOT CHANGE SIZE)
           Column() {
-            Text('SCORE')
-              .fontSize(11)
-              .fontColor('#EEE4DA')
-            Text(this.score.toString())
-              .fontSize(22)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-          }
-          .alignItems(HorizontalAlign.Center)
-        }
-        .width(90)
-        .height(56)
-        .backgroundColor('#BBADA0')
-        .borderRadius(6)
-
-        Stack() {
-          Column() {
-            Text('BEST')
-              .fontSize(11)
-              .fontColor('#EEE4DA')
-            Text(this.bestScore.toString())
-              .fontSize(22)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-          }
-          .alignItems(HorizontalAlign.Center)
-        }
-        .width(90)
-        .height(56)
-        .backgroundColor('#BBADA0')
-        .borderRadius(6)
-      }
-      .width('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(VerticalAlign.Center)
-      .padding({ top: 8, bottom: 16 })
-
-      // Game grid
-      Stack() {
-        Grid() {
-          ForEach(this.flatTiles, (cellValue: number, index: number) => {
-            GridItem() {
-              Stack() {
-                Text(cellValue === 0 ? '' : cellValue.toString())
-                  .width('100%')
-                  .height('100%')
-                  .fontSize(this.getTileFontSize(cellValue))
+            // Scoreboard area (top)
+            Column() {
+              Row() {
+                Text('2048')
+                  .fontSize(16)
+                  .fontColor('#FF6B35')
                   .fontWeight(FontWeight.Bold)
-                  .fontColor(this.getTextColor(cellValue))
-                  .backgroundColor(this.getTileColor(cellValue))
+                Blank()
+                Text('SCORE: ' + this.score.toString())
+                  .fontSize(12)
+                  .fontColor('#8B8B9E')
+              }
+              .width('100%')
+
+              Column() {
+                Text('BEST  ' + this.bestScore.toString())
+                  .fontSize(13).fontColor('#FFD700').fontWeight(FontWeight.Bold)
+                Text('LAST  ' + this.lastScore.toString())
+                  .fontSize(13).fontColor('#8B8B9E')
+              }
+              .width('100%')
+              .alignItems(HorizontalAlign.Center)
+              .justifyContent(FlexAlign.Center)
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .layoutWeight(1)
+
+            // Game grid (bottom)
+            Stack() {
+              Grid() {
+                ForEach(this.flatTiles, (cellValue: number, index: number) => {
+                  GridItem() {
+                    Stack() {
+                      Text(cellValue === 0 ? '' : cellValue.toString())
+                        .width('100%')
+                        .height('100%')
+                        .fontSize(this.getTileFontSize(cellValue))
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(this.getTextColor(cellValue))
+                        .backgroundColor(this.getTileColor(cellValue))
+                        .borderRadius(6)
+                        .textAlign(TextAlign.Center)
+                    }
+                  }
+                }, (index: number) => index.toString())
+              }
+              .columnsTemplate('1fr 1fr 1fr 1fr')
+              .rowsTemplate('1fr 1fr 1fr 1fr')
+              .columnsGap(4)
+              .rowsGap(4)
+              .width('100%')
+              .height('100%')
+              .backgroundColor('#BBADA0')
+              .borderRadius(8)
+              .padding(4)
+
+              // overlay
+              if (this.showOverlay) {
+                Column() {
+                  Text(this.gameOver ? '游戏结束' : '你赢了！')
+                    .fontSize(28)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor('#776E65')
+                  Button() {
+                    Text('再来一局')
+                      .fontSize(14)
+                      .fontColor('#F9F6F2')
+                  }
+                  .backgroundColor('#8F7A66')
                   .borderRadius(6)
-                  .textAlign(TextAlign.Center)
+                  .margin({ top: 12 })
+                  .onClick(() => {
+                    this.initGame();
+                  })
+                }
+                .width('100%')
+                .height('100%')
+                .backgroundColor('#BAEEE4DA')
+                .alignItems(HorizontalAlign.Center)
+                .justifyContent(FlexAlign.Center)
+                .borderRadius(8)
               }
             }
-          }, (index: number) => index.toString())
-        }
-        .columnsTemplate('1fr 1fr 1fr 1fr')
-        .rowsTemplate('1fr 1fr 1fr 1fr')
-        .columnsGap(8)
-        .rowsGap(8)
-        .width(320)
-        .height(320)
-        .backgroundColor('#BBADA0')
-        .borderRadius(8)
-        .padding(8)
-        .onTouch((event: TouchEvent) => {
-          if (event.type === TouchType.Down) {
-            this.handleTouchStart(event);
-          } else if (event.type === TouchType.Up) {
-            this.handleTouchEnd(event);
+            .width('100%')
+            .aspectRatio(1)
+            .alignSelf(ItemAlign.Center)
           }
-        })
-
-        // overlay
-        if (this.showOverlay) {
-          Column() {
-            Text(this.gameOver ? '游戏结束' : '你赢了！')
-              .fontSize(36)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#776E65')
-
-            Button() {
-              Text('再来一局')
-                .fontSize(16)
-                .fontColor('#F9F6F2')
-            }
-            .backgroundColor('#8F7A66')
-            .borderRadius(8)
-            .margin({ top: 16 })
-            .onClick(() => {
-              this.initGame();
-            })
-          }
-          .width(320)
-          .height(320)
-          .backgroundColor('#BAEEE4DA')
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .height(450)
+          .backgroundColor('#1A1A2E')
           .borderRadius(8)
-          .transition(TransitionEffect.opacity(0))
+          .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
+        .backgroundColor('#444444')
+        .borderRadius(12)
+        .padding(8)
+        .margin({ top: 20, left: 16, right: 16 })
+
+        // Start / Select
+        Row() {
+          this.StartSelectLayout()
+        }
+        .padding({ top: 14, bottom: 4 })
+
+        // D-Pad left, A/B right
+        Row() {
+          this.DPadLayout()
+          Blank().layoutWeight(1)
+          this.ActionButtonLayout()
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ left: 16, right: 24, bottom: 4 })
+
+        Text('HARMONY GB')
+          .fontSize(11)
+          .fontColor('#888888')
+          .margin({ bottom: 6 })
       }
-      .width(320)
-      .height(320)
-
-      Text('滑动屏幕移动方块')
-        .fontSize(14)
-        .fontColor('#776E65')
-        .margin({ top: 20 })
-        .opacity(0.6)
-
-      // bottom spacer
-      Blank()
+      .width('92%')
+      .layoutWeight(1)
+      .backgroundColor('#D4D0C8')
+      .borderRadius(24)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FAF8EF')
-    .alignItems(HorizontalAlign.Center)
+    .backgroundColor('#2B2B2B')
     .justifyContent(FlexAlign.Center)
+    .padding({ top: 40, bottom: 15 })
+  }
+
+  @Builder DPadLayout() {
+    Stack() {
+      Button() {
+        Image($r('app.media.icon_up')).width(60).height(60)
+      }
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0)
+      .offset({ y: -42 })
+      .onClick(() => { this.tryMove('up'); vibrate(8); })
+      Button() {
+        Image($r('app.media.icon_down')).width(60).height(60)
+      }
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0)
+      .offset({ y: 42 })
+      .onClick(() => { this.tryMove('down'); vibrate(8); })
+      Button() {
+        Image($r('app.media.icon_left')).width(60).height(60)
+      }
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0)
+      .offset({ x: -42 })
+      .onClick(() => { this.tryMove('left'); vibrate(8); })
+      Button() {
+        Image($r('app.media.icon_right')).width(60).height(60)
+      }
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0)
+      .offset({ x: 42 })
+      .onClick(() => { this.tryMove('right'); vibrate(8); })
+    }
+    .width(140).height(140)
+  }
+
+  @Builder StartSelectLayout() {
+    Row() {
+      Button() {
+        Text('START').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+      }
+      .width(64).height(28).backgroundColor('#CC4444').borderRadius(14)
+      .onClick(() => { this.initGame(); })
+
+      Button() {
+        Text('BACK').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+      }
+      .width(64).height(28).backgroundColor('#4488CC').borderRadius(14)
+      .margin({ left: 16 })
+      .onClick(() => {
+        try { this.getUIContext().getRouter().back(); } catch (_) {}
+      })
+    }
+  }
+
+  @Builder ActionButtonLayout() {
+    Row() {
+      Stack() {
+        Circle().width(56).height(56).fill('#4488CC')
+        Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+      }
+      .onClick(() => {
+        try { this.getUIContext().getRouter().back(); } catch (_) {}
+      })
+
+      Stack() {
+        Circle().width(64).height(64).fill('#CC4444')
+        Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+      }
+      .margin({ left: 12 })
+      .onClick(() => { this.initGame(); })
+    }
   }
 }

@@ -6,6 +6,7 @@ function vibrate(ms: number): void {
   } catch (_) {}
 }
 
+
 class GameEntry {
   title: string = '';
   page: string = '';
@@ -18,8 +19,7 @@ struct Index {
 
   private games: GameEntry[] = [
     { title: '2048', page: 'pages/Game2048' },
-    { title: 'Minesweeper', page: 'pages/Minesweeper' },
-    { title: '打地鼠', page: 'pages/WhackAMole' },
+    { title: '扫雷', page: 'pages/Minesweeper' },
     { title: '贪吃蛇', page: 'pages/Snake' },
     { title: '赛车大赛', page: 'pages/CarRacer' }
   ];
@@ -53,83 +53,79 @@ struct Index {
   }
 
   build() {
-    Stack() {
+    Column() {
+      // Console body
       Column() {
-        // Console body
+        // Screen bezel
         Column() {
-          // Screen bezel
+          // Screen
           Column() {
-            // Screen
-            Column() {
-              Row() {
-                Text('GAME LIST')
-                  .fontSize(14)
-                  .fontColor('#FF6B35')
-                  .fontWeight(FontWeight.Bold)
-                  .width('100%')
-                  .textAlign(TextAlign.Center)
-              }
-              .width('100%')
-              .margin({ bottom: 4 })
-
-              Scroll() {
-                Column() {
-                  ForEach(this.games, (game: GameEntry, index: number) => {
-                    this.GameListItem(game.title, index)
-                  }, (game: GameEntry, index: number) => index.toString())
-                }
+            Row() {
+              Text('GAME LIST')
+                .fontSize(14)
+                .fontColor('#FF6B35')
+                .fontWeight(FontWeight.Bold)
                 .width('100%')
-              }
-              .width('100%')
-              .layoutWeight(1)
+                .textAlign(TextAlign.Center)
             }
             .width('100%')
-            .height(280)
-            .backgroundColor('#1A1A2E')
-            .borderRadius(8)
-            .padding({ top: 10, bottom: 8, left: 12, right: 12 })
-          }
-          .backgroundColor('#444444')
-          .borderRadius(12)
-          .padding(8)
-          .margin({ top: 20, left: 16, right: 16 })
+            .margin({ bottom: 4 })
 
-          // Start / Select in the middle gap
-          Row() {
-            this.StartSelectLayout()
-          }
-          .padding({ top: 4, bottom: 4 })
-
-          // Bottom section: D-Pad left, A/B right
-          Row() {
-            this.DPadLayout()
-            Blank()
-              .layoutWeight(1)
-            this.ActionButtonLayout()
+            Scroll() {
+              Column() {
+                ForEach(this.games, (game: GameEntry, index: number) => {
+                  this.GameListItem(game.title, index)
+                }, (game: GameEntry, index: number) => index.toString())
+              }
+              .width('100%')
+            }
+            .width('100%')
+            .layoutWeight(1)
           }
           .width('100%')
-          .layoutWeight(1)
-          .padding({ left: 16, right: 24, bottom: 8 })
-
-          // Brand
-          Text('HARMONY GB')
-            .fontSize(11)
-            .fontColor('#888888')
-            .margin({ bottom: 10 })
+          .height(450)
+          .backgroundColor('#1A1A2E')
+          .borderRadius(8)
+          .padding({ top: 10, bottom: 8, left: 12, right: 12 })
         }
-        .width('92%')
-        .height('85%')
-        .backgroundColor('#D4D0C8')
-        .borderRadius(24)
+        .backgroundColor('#444444')
+        .borderRadius(12)
+        .padding(8)
+        .margin({ top: 20, left: 16, right: 16 })
+
+        // Start / Select in the middle gap
+        Row() {
+          this.StartSelectLayout()
+        }
+        .padding({ top: 14, bottom: 4 })
+
+        // Bottom section: D-Pad left, A/B right
+        Row() {
+          this.DPadLayout()
+          Blank()
+            .layoutWeight(1)
+          this.ActionButtonLayout()
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ left: 16, right: 24, bottom: 4 })
+
+        // Brand
+        Text('HARMONY GB')
+          .fontSize(11)
+          .fontColor('#888888')
+          .margin({ bottom: 6 })
       }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+      .width('92%')
+      .layoutWeight(1)
+      .backgroundColor('#D4D0C8')
+      .borderRadius(24)
     }
     .width('100%')
     .height('100%')
     .backgroundColor('#2B2B2B')
+    .justifyContent(FlexAlign.Center)
+    .padding({ top: 40, bottom: 15 })
   }
 
   @Builder GameListItem(title: string, index: number) {
@@ -165,37 +161,29 @@ struct Index {
 
   @Builder DPadLayout() {
     Stack() {
-      Circle()
-        .width(100)
-        .height(100)
-        .fill('#3A3A3A')
-      // Up
       Button() {
-        Text('▲').fontSize(24).fontColor('#CCCCCC')
+        Image($r('app.media.icon_up')).width(60).height(60)
       }
-      .width(60).height(44).backgroundColor('#555555').borderRadius(8)
-      .offset({ y: -56 })
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0)
+.offset({ y: -42 })
       .onClick(() => { this.moveUp(); })
-      // Down
       Button() {
-        Text('▼').fontSize(24).fontColor('#CCCCCC')
+        Image($r('app.media.icon_down')).width(60).height(60)
       }
-      .width(60).height(44).backgroundColor('#555555').borderRadius(8)
-      .offset({ y: 56 })
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0)
+.offset({ y: 42 })
       .onClick(() => { this.moveDown(); })
-      // Left
       Button() {
-        Text('◀').fontSize(24).fontColor('#CCCCCC')
+        Image($r('app.media.icon_left')).width(60).height(60)
       }
-      .width(44).height(60).backgroundColor('#555555').borderRadius(8)
-      .offset({ x: -56 })
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0)
+.offset({ x: -42 })
       .onClick(() => { if (this.selectedIndex > 0) { this.selectedIndex = 0; vibrate(8); } })
-      // Right
       Button() {
-        Text('▶').fontSize(24).fontColor('#CCCCCC')
+        Image($r('app.media.icon_right')).width(60).height(60)
       }
-      .width(44).height(60).backgroundColor('#555555').borderRadius(8)
-      .offset({ x: 56 })
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0)
+.offset({ x: 42 })
       .onClick(() => { if (this.selectedIndex < this.games.length - 1) { this.selectedIndex = this.games.length - 1; vibrate(8); } })
     }
     .width(140).height(140)
@@ -206,13 +194,13 @@ struct Index {
       Button() {
         Text('START').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
-      .width(64).height(28).backgroundColor('#666666').borderRadius(14)
+      .width(64).height(28).backgroundColor('#CC4444').borderRadius(14)
       .onClick(() => { this.selectGame(); })
 
       Button() {
-        Text('SELECT').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
+        Text('BACK').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
-      .width(64).height(28).backgroundColor('#666666').borderRadius(14)
+      .width(64).height(28).backgroundColor('#4488CC').borderRadius(14)
       .margin({ left: 16 })
       .onClick(() => { this.goBack(); })
     }
@@ -221,13 +209,13 @@ struct Index {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() {
-        Circle().width(56).height(56).fill('#E84855')
+        Circle().width(56).height(56).fill('#4488CC')
         Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
       .onClick(() => { this.goBack(); })
 
       Stack() {
-        Circle().width(64).height(64).fill('#4ECDC4')
+        Circle().width(64).height(64).fill('#CC4444')
         Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
       .margin({ left: 12 })

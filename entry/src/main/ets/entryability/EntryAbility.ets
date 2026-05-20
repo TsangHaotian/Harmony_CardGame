@@ -26,10 +26,10 @@ export default class EntryAbility extends UIAbility {
       if (win) {
         win.setWindowLayoutFullScreen(true);
         win.setWindowSystemBarProperties({
-          statusBarColor: '#FAF8EF',
-          navigationBarColor: '#FAF8EF',
-          statusBarContentColor: '#666666',
-          navigationBarContentColor: '#666666'
+          statusBarColor: '#00000000',
+          navigationBarColor: '#00000000',
+          statusBarContentColor: '#FFFFFF',
+          navigationBarContentColor: '#FFFFFF'
         });
       }
     } catch (err) {

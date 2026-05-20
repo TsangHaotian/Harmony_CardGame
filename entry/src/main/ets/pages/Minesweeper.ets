@@ -20,6 +20,10 @@ struct Minesweeper {
   @State seconds: number = 0;
   @State initialized: boolean = false;
   @State flagMode: boolean = false;
+  @State cursorRow: number = 0;
+  @State cursorCol: number = 0;
+  @State bestScore: number = 0;
+  @State lastScore: number = 0;
 
   private gridSize: number = 9;
   private cells: number[][] = [];
@@ -54,10 +58,13 @@ struct Minesweeper {
     this.firstClick = true;
     this.gameOver = false;
     this.gameWon = false;
+    this.lastScore = 0;
     this.showOverlay = false;
     this.flagCount = 0;
     this.seconds = 0;
     this.initialized = true;
+    this.cursorRow = 0;
+    this.cursorCol = 0;
     if (this.timerInterval > 0) {
       clearInterval(this.timerInterval);
       this.timerInterval = -1;
@@ -70,27 +77,19 @@ struct Minesweeper {
     while (placed < this.mineCount) {
       let r = Math.floor(Math.random() * this.gridSize);
       let c = Math.floor(Math.random() * this.gridSize);
-      if (this.cells[r][c] === 9) {
-        continue;
-      }
-      if (Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1) {
-        continue;
-      }
+      if (this.cells[r][c] === 9) { continue; }
+      if (Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1) { continue; }
       this.cells[r][c] = 9;
       placed++;
     }
     for (let r = 0; r < this.gridSize; r++) {
       for (let c = 0; c < this.gridSize; c++) {
-        if (this.cells[r][c] === 9) {
-          continue;
-        }
+        if (this.cells[r][c] === 9) { continue; }
         let count = 0;
         for (let d = 0; d < this.DIRS.length; d++) {
           let nr = r + this.DIRS[d][0];
           let nc = c + this.DIRS[d][1];
-          if (nr >= 0 && nr < this.gridSize && nc >= 0 && nc < this.gridSize && this.cells[nr][nc] === 9) {
-            count++;
-          }
+          if (nr >= 0 && nr < this.gridSize && nc >= 0 && nc < this.gridSize && this.cells[nr][nc] === 9) { count++; }
         }
         this.cells[r][c] = count;
       }
@@ -114,12 +113,8 @@ struct Minesweeper {
   }
 
   reveal(r: number, c: number): void {
-    if (r < 0 || r >= this.gridSize || c < 0 || c >= this.gridSize) {
-      return;
-    }
-    if (this.revealed[r][c] || this.flagged[r][c]) {
-      return;
-    }
+    if (r < 0 || r >= this.gridSize || c < 0 || c >= this.gridSize) { return; }
+    if (this.revealed[r][c] || this.flagged[r][c]) { return; }
     this.revealed[r][c] = true;
     if (this.cells[r][c] === 0) {
       for (let d = 0; d < this.DIRS.length; d++) {
@@ -129,14 +124,10 @@ struct Minesweeper {
   }
 
   handleClick(index: number): void {
-    if (this.gameOver || this.gameWon || this.showOverlay) {
-      return;
-    }
+    if (this.gameOver || this.gameWon || this.showOverlay) { return; }
     let r = Math.floor(index / this.gridSize);
     let c = index % this.gridSize;
-    if (this.revealed[r][c]) {
-      return;
-    }
+    if (this.revealed[r][c]) { return; }
     if (this.flagMode) {
       this.flagged[r][c] = !this.flagged[r][c];
       this.countFlags();
@@ -144,18 +135,13 @@ struct Minesweeper {
       vibrate(10);
       return;
     }
-    if (this.flagged[r][c]) {
-      vibrate(5);
-      return;
-    }
+    if (this.flagged[r][c]) { vibrate(5); return; }
     if (this.firstClick) {
       this.placeMines(r, c);
       this.firstClick = false;
       if (this.timerInterval < 0) {
         this.timerInterval = setInterval(() => {
-          if (!this.gameOver && !this.gameWon) {
-            this.seconds++;
-          }
+          if (!this.gameOver && !this.gameWon) { this.seconds++; }
         }, 1000);
       }
     }
@@ -164,12 +150,12 @@ struct Minesweeper {
       this.revealed[r][c] = true;
       for (let rr = 0; rr < this.gridSize; rr++) {
         for (let cc = 0; cc < this.gridSize; cc++) {
-          if (this.cells[rr][cc] === 9) {
-            this.revealed[rr][cc] = true;
-          }
+          if (this.cells[rr][cc] === 9) { this.revealed[rr][cc] = true; }
         }
       }
       this.gameOver = true;
+      this.lastScore = this.seconds;
+      if (this.seconds > this.bestScore) { this.bestScore = this.seconds; }
       this.syncFlat();
       setTimeout(() => { this.showOverlay = true; }, 300);
       return;
@@ -184,9 +170,7 @@ struct Minesweeper {
     this.flagCount = 0;
     for (let rr = 0; rr < this.gridSize; rr++) {
       for (let cc = 0; cc < this.gridSize; cc++) {
-        if (this.flagged[rr][cc]) {
-          this.flagCount++;
-        }
+        if (this.flagged[rr][cc]) { this.flagCount++; }
       }
     }
   }
@@ -196,16 +180,13 @@ struct Minesweeper {
     let totalRevealed = 0;
     for (let r = 0; r < this.gridSize; r++) {
       for (let c = 0; c < this.gridSize; c++) {
-        if (this.cells[r][c] !== 9) {
-          totalSafe++;
-          if (this.revealed[r][c]) {
-            totalRevealed++;
-          }
-        }
+        if (this.cells[r][c] !== 9) { totalSafe++; if (this.revealed[r][c]) { totalRevealed++; } }
       }
     }
     if (totalSafe === totalRevealed) {
       this.gameWon = true;
+      this.lastScore = this.seconds;
+      if (this.bestScore === 0 || this.seconds < this.bestScore) { this.bestScore = this.seconds; }
       this.syncFlat();
       setTimeout(() => { this.showOverlay = true; }, 300);
     }
@@ -214,9 +195,7 @@ struct Minesweeper {
   cellText(index: number): string {
     if (!this.initialized) { return ''; }
     if (!this.flatRevealed[index]) {
-      if (this.flatFlagged[index]) {
-        return '🚩';
-      }
+      if (this.flatFlagged[index]) { return '🚩'; }
       return '';
     }
     let v = this.flatCells[index];
@@ -227,9 +206,7 @@ struct Minesweeper {
 
   cellColor(index: number): string {
     if (!this.initialized) { return '#A0A0A0'; }
-    if (!this.flatRevealed[index]) {
-      return '#B0B0B0';
-    }
+    if (!this.flatRevealed[index]) { return '#B0B0B0'; }
     let v = this.flatCells[index];
     if (v === 9) { return '#FF4444'; }
     if (v === 0) { return '#D8D8D8'; }
@@ -238,9 +215,7 @@ struct Minesweeper {
 
   cellTextColor(index: number): string {
     if (!this.initialized) { return '#000000'; }
-    if (!this.flatRevealed[index]) {
-      return '#000000';
-    }
+    if (!this.flatRevealed[index]) { return '#000000'; }
     let v = this.flatCells[index];
     if (v === 1) { return '#0000FF'; }
     if (v === 2) { return '#008000'; }
@@ -264,125 +239,140 @@ struct Minesweeper {
 
   build() {
     Column() {
-      Blank()
-
-      Row() {
-        Button() {
-          Text('← 返回')
-            .fontSize(16)
-            .fontColor('#776E65')
-        }
-        .backgroundColor('transparent')
-        .onClick(() => {
-          try {
-            if (this.timerInterval > 0) {
-              clearInterval(this.timerInterval);
-            }
-            this.getUIContext().getRouter().back();
-          } catch (_) {}
-        })
-
-        Text('💣 ' + (this.mineCount - this.flagCount).toString())
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-
-        Button() {
-          Text(this.flagMode ? '⛏️' : '🚩')
-            .fontSize(20)
-        }
-        .backgroundColor(this.flagMode ? '#FFD700' : 'transparent')
-        .borderRadius(6)
-        .width(40)
-        .height(40)
-        .onClick(() => {
-          this.flagMode = !this.flagMode;
-        })
-
-        Button() {
-          Text('😊')
-            .fontSize(24)
-        }
-        .backgroundColor('transparent')
-        .onClick(() => {
-          this.initGame();
-        })
-
-        Text(this.seconds.toString() + 's')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#776E65')
-      }
-      .width('100%')
-      .justifyContent(FlexAlign.SpaceEvenly)
-      .alignItems(VerticalAlign.Center)
-      .padding({ top: 8, bottom: 12 })
-
-      Stack() {
-        Grid() {
-          ForEach(this.flatCells, (_value: number, index: number) => {
-            GridItem() {
-              Stack() {
-                Text(this.cellText(index))
-                  .width('100%')
-                  .height('100%')
-                  .fontSize(this.cellFontSize(index))
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(this.cellTextColor(index))
-                  .backgroundColor(this.cellColor(index))
-                  .textAlign(TextAlign.Center)
-              }
-              .borderRadius(3)
-              .borderWidth(1)
-              .borderColor('#999999')
-            }
-            .onClick(() => {
-              this.handleClick(index);
-            })
-          }, (index: number) => index.toString())
-        }
-        .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
-        .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
-        .columnsGap(1)
-        .rowsGap(1)
-        .width(306)
-        .height(306)
-
-        if (this.showOverlay) {
+      Column() {
+        Column() {
           Column() {
-            Text(this.gameOver ? '游戏结束' : '你赢了！')
-              .fontSize(36)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#776E65')
-            Button() {
-              Text('再来一局')
-                .fontSize(16)
-                .fontColor('#F9F6F2')
-            }
-            .backgroundColor('#8F7A66')
-            .borderRadius(8)
-            .margin({ top: 16 })
-            .onClick(() => {
-              this.initGame();
-            })
-          }
-          .width(306)
-          .height(306)
-          .backgroundColor('#BAEEE4DA')
-          .alignItems(HorizontalAlign.Center)
-          .justifyContent(FlexAlign.Center)
-          .borderRadius(8)
-          .transition(TransitionEffect.opacity(0))
-        }
-      }
-      .width(306)
-      .height(306)
+            // Scoreboard area (top)
+            Column() {
+              Row() {
+                Text('扫雷').fontSize(16).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
+                Blank()
+                Text('💣 ' + (this.mineCount - this.flagCount).toString()).fontSize(12).fontColor('#8B8B9E')
+                Text('  ⏱ ' + this.seconds.toString() + 's').fontSize(12).fontColor('#8B8B9E')
+              }
+              .width('100%')
 
-      Blank()
+              Column() {
+                Text((this.bestScore > 0 ? 'BEST  ' + this.bestScore.toString() + 's' : 'BEST  --') + ' | LAST  ' + this.lastScore.toString() + 's')
+                  .fontSize(13).fontColor('#8B8B9E')
+              }
+              .width('100%')
+              .alignItems(HorizontalAlign.Center)
+              .justifyContent(FlexAlign.Center)
+              .layoutWeight(1)
+            }
+            .width('100%')
+            .layoutWeight(1)
+
+            // Game grid (bottom)
+            Stack() {
+              Grid() {
+                ForEach(this.flatCells, (_value: number, index: number) => {
+                  GridItem() {
+                    Stack() {
+                      Text(this.cellText(index))
+                        .width('100%').height('100%')
+                        .fontSize(this.cellFontSize(index))
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor(this.cellTextColor(index))
+                        .backgroundColor(this.cellColor(index))
+                        .textAlign(TextAlign.Center)
+                    }
+                    .borderRadius(2).borderWidth(1).borderColor('#666666')
+                  }
+                  .onClick(() => { this.handleClick(index); })
+                }, (index: number) => index.toString())
+              }
+              .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+              .columnsGap(1).rowsGap(1)
+              .width('100%').height('100%')
+
+              if (this.showOverlay) {
+                Column() {
+                  Text(this.gameOver ? '游戏结束' : '你赢了！').fontSize(28).fontWeight(FontWeight.Bold).fontColor('#776E65')
+                  Button() { Text('再来一局').fontSize(14).fontColor('#F9F6F2') }
+                  .backgroundColor('#8F7A66').borderRadius(6).margin({ top: 12 })
+                  .onClick(() => { this.initGame(); })
+                }
+                .width('100%').height('100%')
+                .backgroundColor('#BAEEE4DA')
+                .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center).borderRadius(8)
+              }
+            }
+            .width('100%')
+            .aspectRatio(1)
+            .alignSelf(ItemAlign.Center)
+          }
+          .width('100%')
+          .height(450)
+          .backgroundColor('#1A1A2E')
+          .borderRadius(8)
+          .padding({ top: 10, bottom: 8, left: 12, right: 12 })
+        }
+        .backgroundColor('#444444').borderRadius(12).padding(8)
+        .margin({ top: 20, left: 16, right: 16 })
+
+        Row() { this.StartSelectLayout() }.padding({ top: 14, bottom: 4 })
+
+        Row() {
+          this.DPadLayout()
+          Blank().layoutWeight(1)
+          this.ActionButtonLayout()
+        }
+        .width('100%').layoutWeight(1)
+        .padding({ left: 16, right: 24, bottom: 4 })
+
+        Text('HARMONY GB').fontSize(11).fontColor('#888888').margin({ bottom: 6 })
+      }
+      .width('92%').layoutWeight(1).backgroundColor('#D4D0C8').borderRadius(24)
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#FAF8EF')
-    .alignItems(HorizontalAlign.Center)
-    .justifyContent(FlexAlign.Center)
+    .width('100%').height('100%').backgroundColor('#2B2B2B')
+    .justifyContent(FlexAlign.Center).padding({ top: 40, bottom: 15 })
+  }
+
+  @Builder DPadLayout() {
+    Stack() {
+      Button() { Image($r('app.media.icon_up')).width(60).height(60) }
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
+      .onClick(() => { if (this.cursorRow > 0) { this.cursorRow--; vibrate(8); } })
+      Button() { Image($r('app.media.icon_down')).width(60).height(60) }
+      .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
+      .onClick(() => { if (this.cursorRow < 8) { this.cursorRow++; vibrate(8); } })
+      Button() { Image($r('app.media.icon_left')).width(60).height(60) }
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
+      .onClick(() => { if (this.cursorCol > 0) { this.cursorCol--; vibrate(8); } })
+      Button() { Image($r('app.media.icon_right')).width(60).height(60) }
+      .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
+      .onClick(() => { if (this.cursorCol < 8) { this.cursorCol++; vibrate(8); } })
+    }
+    .width(140).height(140)
+  }
+
+  @Builder StartSelectLayout() {
+    Row() {
+      Button() { Text('START').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
+      .width(64).height(28).backgroundColor('#CC4444').borderRadius(14)
+      .onClick(() => { this.initGame(); })
+      Button() { Text('BACK').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
+      .width(64).height(28).backgroundColor('#4488CC').borderRadius(14).margin({ left: 16 })
+      .onClick(() => {
+        if (this.timerInterval > 0) { clearInterval(this.timerInterval); }
+        try { this.getUIContext().getRouter().back(); } catch (_) {}
+      })
+    }
+  }
+
+  @Builder ActionButtonLayout() {
+    Row() {
+      Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
+      .onClick(() => { this.flagMode = !this.flagMode; })
+      Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
+      .margin({ left: 12 })
+      .onClick(() => {
+        let idx = this.cursorRow * this.gridSize + this.cursorCol;
+        this.handleClick(idx);
+      })
+    }
   }
 }
