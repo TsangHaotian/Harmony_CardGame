@@ -3,6 +3,8 @@
     "pages/Index",
     "pages/Game2048",
     "pages/Minesweeper",
-    "pages/WhackAMole"
+    "pages/WhackAMole",
+    "pages/Snake",
+    "pages/CarRacer"
   ]
 }
