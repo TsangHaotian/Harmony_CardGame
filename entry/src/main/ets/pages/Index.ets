@@ -19,19 +19,15 @@ struct Index {
   private scroller: Scroller = new Scroller();
 
   private games: GameEntry[] = [
+    { title: '五子棋', page: 'pages/Gomoku' },
     { title: '2048', page: 'pages/Game2048' },
     { title: '扫雷', page: 'pages/Minesweeper' },
     { title: '飞机大战', page: 'pages/PlaneBattle' },
     { title: '贪吃蛇', page: 'pages/Snake' },
+    { title: '围棋', page: 'pages/Go' },
     { title: '俄罗斯方块', page: 'pages/Tetris' },
     { title: '打砖块', page: 'pages/Breakout' },
-    { title: '游戏1', page: 'pages/Game1' },
-    { title: '游戏2', page: 'pages/Game2' },
-    { title: '游戏3', page: 'pages/Game3' },
-    { title: '游戏4', page: 'pages/Game4' },
-    { title: '游戏5', page: 'pages/Game5' },
-    { title: '游戏6', page: 'pages/Game6' },
-    { title: '游戏7', page: 'pages/Game7' },
+    { title: '井字棋', page: 'pages/TicTacToe' },
     { title: '赛车大赛', page: 'pages/CarRacer' },
     { title: '关于', page: 'pages/About' }
   ];
