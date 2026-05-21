@@ -1,4 +1,6 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
@@ -6,14 +8,41 @@ function vibrate(ms: number): void {
   } catch (_) {}
 }
 
-const SHAPES: number[][][] = [
-  [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-  [[1,1],[1,1]],
-  [[0,1,0],[1,1,1],[0,0,0]],
-  [[1,0,0],[1,1,1],[0,0,0]],
-  [[0,0,1],[1,1,1],[0,0,0]],
-  [[0,1,1],[1,1,0],[0,0,0]],
-  [[1,1,0],[0,1,1],[0,0,0]]
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
+}
+
+const SHAPES: number[][][][] = [
+  [[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],[[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],[[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],[[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]],
+  [[[1,1],[1,1]],[[1,1],[1,1]],[[1,1],[1,1]],[[1,1],[1,1]]],
+  [[[0,1,0],[1,1,1],[0,0,0]],[[0,1,0],[0,1,1],[0,1,0]],[[0,0,0],[1,1,1],[0,1,0]],[[0,1,0],[1,1,0],[0,1,0]]],
+  [[[1,0,0],[1,1,1],[0,0,0]],[[0,1,1],[0,1,0],[0,1,0]],[[0,0,0],[1,1,1],[0,0,1]],[[0,1,0],[0,1,0],[1,1,0]]],
+  [[[0,0,1],[1,1,1],[0,0,0]],[[0,1,0],[0,1,0],[0,1,1]],[[0,0,0],[1,1,1],[1,0,0]],[[1,1,0],[0,1,0],[0,1,0]]],
+  [[[0,1,1],[1,1,0],[0,0,0]],[[0,1,0],[0,1,1],[0,0,1]],[[0,0,0],[0,1,1],[1,1,0]],[[1,0,0],[1,1,0],[0,1,0]]],
+  [[[1,1,0],[0,1,1],[0,0,0]],[[0,0,1],[0,1,1],[0,1,0]],[[0,0,0],[1,1,0],[0,1,1]],[[0,1,0],[1,1,0],[1,0,0]]]
 ];
 
 const COLORS: string[] = ['#1A1A2E', '#44DDDD', '#FFDD44', '#AA44DD', '#DD8844', '#4444DD', '#44DD44', '#DD4444'];
@@ -28,6 +57,9 @@ struct Tetris {
   @State paused: boolean = false;
   @State bestScore: number = AppStorage.get<number>('BestTetris') ?? 0;
   @State lastScore: number = 0;
+  @State nextType: number = 0;
+  @State level: number = 1;
+  @State lines: number = 0;
 
   private cols: number = 10;
   private rows: number = 20;
@@ -36,7 +68,6 @@ struct Tetris {
   private pieceRow: number = 0;
   private pieceCol: number = 0;
   private pieceRot: number = 0;
-  private nextType: number = 0;
   private gameTimer: number = -1;
 
   aboutToAppear(): void {
@@ -61,6 +92,8 @@ struct Tetris {
   startGame(): void {
     this.locked = new Array(200).fill(0);
     this.score = 0;
+    this.level = 1;
+    this.lines = 0;
     this.gameOver = false;
     this.showOverlay = false;
     this.paused = false;
@@ -68,7 +101,7 @@ struct Tetris {
     this.nextType = Math.floor(Math.random() * 7) + 1;
     this.spawnPiece();
     if (this.gameTimer > 0) { clearInterval(this.gameTimer); this.gameTimer = -1; }
-    this.gameTimer = setInterval(() => { this.tick(); }, 500);
+    this.gameTimer = setInterval(() => { this.tick(); }, 800);
   }
 
   spawnPiece(): void {
@@ -85,19 +118,7 @@ struct Tetris {
   }
 
   getShape(type: number, rot: number): number[][] {
-    let s = SHAPES[type - 1];
-    let r = rot % s.length;
-    let res: number[][] = [];
-    for (let i = 0; i < s.length; i++) {
-      res[i] = [];
-      for (let j = 0; j < s[i].length; j++) {
-        if (r === 0) res[i][j] = s[i][j];
-        else if (r === 1) res[i][j] = s[s.length - 1 - j][i];
-        else if (r === 2) res[i][j] = s[s.length - 1 - i][s[i].length - 1 - j];
-        else res[i][j] = s[j][s.length - 1 - i];
-      }
-    }
-    return res;
+    return SHAPES[type - 1][rot % 4];
   }
 
   isValid(row: number, col: number, rot: number): boolean {
@@ -142,7 +163,12 @@ struct Tetris {
     if (cleared > 0) {
       let pts = [0, 100, 300, 500, 800];
       this.score += pts[Math.min(cleared, 4)];
-      vibrate(10);
+      this.lines += cleared;
+      this.level = Math.floor(this.lines / 3) + 1;
+      let speed = Math.max(100, 800 - (this.level - 1) * 70);
+      if (this.gameTimer > 0) { clearInterval(this.gameTimer); }
+      this.gameTimer = setInterval(() => { this.tick(); }, speed);
+      playClick();
     }
   }
 
@@ -157,7 +183,8 @@ struct Tetris {
   }
 
   endGame(): void {
-    vibrate(300);
+    playClick();
+      try { vibrator.vibrate(300); } catch (_) {};
     this.lastScore = this.score;
     if (this.score > this.bestScore) { this.bestScore = this.score; AppStorage.set<number>('BestTetris', this.bestScore); }
     if (this.gameTimer > 0) { clearInterval(this.gameTimer); this.gameTimer = -1; }
@@ -209,21 +236,15 @@ struct Tetris {
 
                 Column() {
                   Text('下一个方块').fontSize(9).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
-                    .width('100%').textAlign(TextAlign.Center).margin({ bottom: 4 })
-                  Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center }) {
-                    ForEach(this.getShape(this.nextType, 0), (row: number[]) => {
-                      Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.Center }) {
-                        ForEach(row, (v: number, ci: number) => {
-                          Text(' ').fontSize(4).width(10).height(10)
-                            .backgroundColor(v > 0 ? COLORS[this.nextType] : '#1A1A2E')
-                            .borderRadius(1).margin(1)
-                        }, (ci: number) => ci.toString())
-                      }
-                    }, (ri: number) => ri.toString())
+                    .width('100%').textAlign(TextAlign.Center)
+                  Stack() {
+                    Image($r('app.media.tetris_' + (this.nextType === 1 ? 'i' : this.nextType === 2 ? 'o' : this.nextType === 3 ? 't' : this.nextType === 4 ? 'l' : this.nextType === 5 ? 'j' : this.nextType === 6 ? 's' : 'z')))
+                      .width(64).height(64).objectFit(ImageFit.Contain)
                   }
                   .width('100%').layoutWeight(1)
                 }
                 .width('28%').height('100%').padding({ left: 4, right: 2 })
+                Text('Lv.' + this.level.toString()).fontSize(9).fontColor('#888888').width('100%').textAlign(TextAlign.Center).margin({ top: 2 })
               }
               .width('100%').height('100%')
 
@@ -274,16 +295,16 @@ struct Tetris {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { this.doRotate(); vibrate(8); })
+      .onClick(() => { this.doRotate(); playClick(); })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { this.moveDown(); vibrate(8); })
+      .onClick(() => { this.moveDown(); playClick(); })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { this.moveLeft(); vibrate(8); })
+      .onClick(() => { this.moveLeft(); playClick(); })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { this.moveRight(); vibrate(8); })
+      .onClick(() => { this.moveRight(); playClick(); })
     }
     .width(140).height(140)
   }
@@ -292,7 +313,7 @@ struct Tetris {
     Row() {
       Button() { Text('START').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .width(64).height(28).backgroundColor('#CC4444').borderRadius(14)
-      .onClick(() => { this.paused = !this.paused; vibrate(10); })
+      .onClick(() => { this.paused = !this.paused; playClick(); })
       Button() { Text('BACK').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .width(64).height(28).backgroundColor('#4488CC').borderRadius(14).margin({ left: 16 })
       .onClick(() => {
@@ -305,10 +326,10 @@ struct Tetris {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => { this.doDrop(); vibrate(10); })
+      .onClick(() => { this.doDrop(); playClick(); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
-      .onClick(() => { this.doRotate(); vibrate(10); })
+      .onClick(() => { this.doRotate(); playClick(); })
     }
   }
 
@@ -323,14 +344,14 @@ struct Tetris {
   moveLeft(): void {
     if (this.gameOver || this.showOverlay || this.paused) return;
     if (this.isValid(this.pieceRow, this.pieceCol - 1, this.pieceRot)) {
-      this.pieceCol--; this.renderBoard(); vibrate(5);
+      this.pieceCol--; this.renderBoard(); playClick();
     }
   }
 
   moveRight(): void {
     if (this.gameOver || this.showOverlay || this.paused) return;
     if (this.isValid(this.pieceRow, this.pieceCol + 1, this.pieceRot)) {
-      this.pieceCol++; this.renderBoard(); vibrate(5);
+      this.pieceCol++; this.renderBoard(); playClick();
     }
   }
 

@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -132,10 +161,10 @@ struct Minesweeper {
       this.flagged[r][c] = !this.flagged[r][c];
       this.countFlags();
       this.syncFlat();
-      vibrate(10);
+      playClick();
       return;
     }
-    if (this.flagged[r][c]) { vibrate(5); return; }
+    if (this.flagged[r][c]) { playClick(); return; }
     if (this.firstClick) {
       this.placeMines(r, c);
       this.firstClick = false;
@@ -146,7 +175,8 @@ struct Minesweeper {
       }
     }
     if (this.cells[r][c] === 9) {
-      vibrate(300);
+      playClick();
+      try { vibrator.vibrate(300); } catch (_) {}
       this.revealed[r][c] = true;
       for (let rr = 0; rr < this.gridSize; rr++) {
         for (let cc = 0; cc < this.gridSize; cc++) {
@@ -163,7 +193,7 @@ struct Minesweeper {
     this.reveal(r, c);
     this.syncFlat();
     this.checkWin();
-    vibrate(8);
+    playClick();
   }
 
   countFlags(): void {
@@ -341,16 +371,16 @@ struct Minesweeper {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { if (this.cursorRow > 0) { this.cursorRow--; vibrate(8); } })
+      .onClick(() => { if (this.cursorRow > 0) { this.cursorRow--; playClick(); } })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { if (this.cursorRow < 8) { this.cursorRow++; vibrate(8); } })
+      .onClick(() => { if (this.cursorRow < 8) { this.cursorRow++; playClick(); } })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { if (this.cursorCol > 0) { this.cursorCol--; vibrate(8); } })
+      .onClick(() => { if (this.cursorCol > 0) { this.cursorCol--; playClick(); } })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { if (this.cursorCol < 8) { this.cursorCol++; vibrate(8); } })
+      .onClick(() => { if (this.cursorCol < 8) { this.cursorCol++; playClick(); } })
     }
     .width(140).height(140)
   }

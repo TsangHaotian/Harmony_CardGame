@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -86,7 +115,7 @@ struct PlaneBattle {
           this.bullets.splice(i, 1);
           this.enemies.splice(ei, 1);
           this.score += 10;
-          vibrate(15);
+          playClick();
           break;
         }
       }
@@ -132,12 +161,12 @@ struct PlaneBattle {
 
   moveLeft(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol > 0) { this.playerCol--; this.renderGrid(); vibrate(5); }
+    if (this.playerCol > 0) { this.playerCol--; this.renderGrid(); playClick(); }
   }
 
   moveRight(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol < this.cols - 1) { this.playerCol++; this.renderGrid(); vibrate(5); }
+    if (this.playerCol < this.cols - 1) { this.playerCol++; this.renderGrid(); playClick(); }
   }
 
   shoot(): void {
@@ -147,13 +176,14 @@ struct PlaneBattle {
     let bulletRow = this.rows - 3;
     this.bullets.push([bulletRow, this.playerCol]);
     this.renderGrid();
-    vibrate(8);
+    playClick();
     setTimeout(() => { this.canShoot = true; }, 200);
   }
 
   endGame(): void {
     this.gameOver = true;
-    vibrate(300);
+    playClick();
+      try { vibrator.vibrate(300); } catch (_) {}
     this.lastScore = this.score;
     if (this.score > this.bestScore) { this.bestScore = this.score; }
     if (this.gameTimer > 0) { clearInterval(this.gameTimer); this.gameTimer = -1; }
@@ -273,16 +303,16 @@ struct PlaneBattle {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { this.moveLeft(); vibrate(8); })
+      .onClick(() => { this.moveLeft(); playClick(); })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { this.moveRight(); vibrate(8); })
+      .onClick(() => { this.moveRight(); playClick(); })
     }
     .width(140).height(140)
   }
@@ -305,10 +335,10 @@ struct PlaneBattle {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => { vibrate(10); })
+      .onClick(() => { playClick(); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
-      .onClick(() => { this.shoot(); vibrate(10); })
+      .onClick(() => { this.shoot(); playClick(); })
     }
   }
 

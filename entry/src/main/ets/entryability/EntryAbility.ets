@@ -46,6 +46,9 @@ export default class EntryAbility extends UIAbility {
     PersistentStorage.persistProp('BestTicTac', 0);
     PersistentStorage.persistProp('BestGomoku', 0);
     PersistentStorage.persistProp('BestGo', 0);
+    PersistentStorage.persistProp('BestPacman', 0);
+    PersistentStorage.persistProp('BestKlotski', 0);
+    PersistentStorage.persistProp('KlotskiLevel', 1);
     PersistentStorage.persistProp('BestGame2', 0);
     PersistentStorage.persistProp('BestGame3', 0);
     PersistentStorage.persistProp('BestGame4', 0);

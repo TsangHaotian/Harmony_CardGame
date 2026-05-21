@@ -3,54 +3,76 @@
 struct WidgetCard {
   build() {
     Column() {
-      Row() {}.width('100%').height(6).backgroundColor('#FF6B35').borderRadius({ topLeft: 16, topRight: 16 })
+      Row() {}.width('100%').height(5).backgroundColor('#FF6B35').borderRadius({ topLeft: 14, topRight: 14 })
 
       Column() {
         Row() {
-          // 左侧：D-Pad
+          // 左侧屏幕
           Column() {
-            Circle().width(10).height(10).fill('#555555')
             Row() {
-              Circle().width(10).height(10).fill('#555555')
-              Circle().width(14).height(14).fill('#666666')
-              Circle().width(10).height(10).fill('#555555')
+              Text('TETRIS').fontSize(8).fontColor('#FF6B35').fontWeight(FontWeight.Bold).letterSpacing(1)
+              Blank()
+              Text('0').fontSize(7).fontColor('#FFD700').fontWeight(FontWeight.Bold)
             }
-            .width(34).justifyContent(FlexAlign.SpaceBetween).margin({ top: 2 })
-            Circle().width(10).height(10).fill('#555555').margin({ top: 2 })
-          }
-          .alignItems(HorizontalAlign.Center).height('100%').width('24%')
+            .width('100%').padding({ bottom: 2 })
 
-          // 屏幕
-          Column() {
             Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.SpaceEvenly }) {
-              Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceEvenly }) {
-                this.Pix('#44DD44'); this.Pix('#44DD44'); this.Pix('#44DD44'); this.Pix('#1A1A2E'); this.Pix('#DD4444')
-              }
-              Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceEvenly }) {
-                this.Pix('#44DD44'); this.Pix('#1A1A2E'); this.Pix('#44DD44'); this.Pix('#1A1A2E'); this.Pix('#1A1A2E')
-              }
-              Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceEvenly }) {
-                this.Pix('#1A1A2E'); this.Pix('#44DD44'); this.Pix('#1A1A2E'); this.Pix('#1A1A2E'); this.Pix('#1A1A2E')
-              }
-              Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceEvenly }) {
-                this.Pix('#1A1A2E'); this.Pix('#1A1A2E'); this.Pix('#1A1A2E'); this.Pix('#FFDD44'); this.Pix('#1A1A2E')
-              }
-            }.width('100%').layoutWeight(1)
+              this.PixLine('.........')
+              this.PixLine('.........')
+              this.PixLine('.........')
+              this.PixLine('.....###.')
+              this.PixLine('.....#.#.')
+              this.PixLine('....##.#.')
+              this.PixLine('....#....')
+              this.PixLine('...###...')
+              this.PixLine('...##....')
+              this.PixLine('..####...')
+              this.PixLine('..###....')
+              this.PixLine('.##.##...')
+              this.PixLine('.##.##...')
+              this.PixLine('###.##...')
+              this.PixLine('####.#.##')
+              this.PixLine('########.')
+              this.PixLine('#####.###')
+              this.PixLine('########.')
+              this.PixLine('#########')
+              this.PixLine('###.####.')
+            }
+            .width('100%').layoutWeight(1)
           }
-          .width('50%').height('100%').backgroundColor('#1A1A2E').borderRadius(6).padding(4)
+          .width('54%').height('100%').backgroundColor('#1A1A2E').borderRadius(6).padding(4)
 
-          // 右侧 A/B
+          Blank()
+
+          // 右侧操作区
           Column() {
-            Circle().width(18).height(18).fill('#CC4444')
-            Circle().width(14).height(14).fill('#4488CC').margin({ top: 5 })
+            // D-Pad
+            Stack() {
+              Circle().width(32).height(32).fill('#555555')
+              Circle().width(10).height(10).fill('#888888')
+              // 方向指示
+              Text('▴').fontSize(8).fontColor('#AAAAAA').offset({ y: -14 })
+              Text('▾').fontSize(8).fontColor('#AAAAAA').offset({ y: 12 })
+              Text('◂').fontSize(8).fontColor('#AAAAAA').offset({ x: -14 })
+              Text('▸').fontSize(8).fontColor('#AAAAAA').offset({ x: 14 })
+            }
+            .width(44).height(44)
+
+            // A/B 按钮
+            Row() {
+              Stack() { Circle().width(18).height(18).fill('#4488CC'); Text('B').fontSize(7).fontColor('#FFFFFF') }
+              Stack() { Circle().width(22).height(22).fill('#CC4444'); Text('A').fontSize(8).fontColor('#FFFFFF') }.margin({ left: 6 })
+            }
+            .margin({ top: 4 })
           }
-          .alignItems(HorizontalAlign.Center).height('100%').width('26%').justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center).justifyContent(FlexAlign.Center)
+          .width('36%')
         }
         .width('100%').layoutWeight(1)
       }
-      .width('100%').layoutWeight(1).backgroundColor('#D4D0C8').padding(10)
+      .width('100%').layoutWeight(1).backgroundColor('#D4D0C8').padding(8)
 
-      Row() {}.width('100%').height(4).backgroundColor('#444444').borderRadius({ bottomLeft: 16, bottomRight: 16 })
+      Row() {}.width('100%').height(3).backgroundColor('#444444').borderRadius({ bottomLeft: 14, bottomRight: 14 })
     }
     .width('100%').height('100%')
     .onClick(() => {
@@ -62,7 +84,13 @@ struct WidgetCard {
     })
   }
 
-  @Builder Pix(c: string) {
-    Text(' ').fontSize(4).width(12).height(12).backgroundColor(c).borderRadius(2)
+  @Builder PixLine(pattern: string) {
+    Row() {
+      ForEach(pattern.split(''), (ch: string) => {
+        Text(' ').fontSize(2).width(5).height(5).margin(0.5)
+          .backgroundColor(ch === '#' ? '#44DDDD' : '#1A1A2E')
+      }, (ch: string, i: number) => i.toString())
+    }
+    .width('100%').justifyContent(FlexAlign.Center)
   }
 }

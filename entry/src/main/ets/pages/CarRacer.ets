@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -104,18 +133,19 @@ struct CarRacer {
 
   moveLeft(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol > 1) { this.playerCol--; this.renderRoad(); vibrate(5); }
+    if (this.playerCol > 1) { this.playerCol--; this.renderRoad(); playClick(); }
   }
 
   moveRight(): void {
     if (this.gameOver || this.showOverlay) { return; }
-    if (this.playerCol < this.roadWidth - 2) { this.playerCol++; this.renderRoad(); vibrate(5); }
+    if (this.playerCol < this.roadWidth - 2) { this.playerCol++; this.renderRoad(); playClick(); }
   }
 
 
   endGame(): void {
     this.gameOver = true;
-    vibrate(300);
+    playClick();
+      try { vibrator.vibrate(300); } catch (_) {}
     this.lastScore = this.score;
     if (this.score > this.bestScore) { this.bestScore = this.score; }
     if (this.gameTimer > 0) { clearInterval(this.gameTimer); this.gameTimer = -1; }
@@ -239,16 +269,16 @@ struct CarRacer {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { this.moveLeft(); vibrate(8); })
+      .onClick(() => { this.moveLeft(); playClick(); })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { this.moveRight(); vibrate(8); })
+      .onClick(() => { this.moveRight(); playClick(); })
     }
     .width(140).height(140)
   }
@@ -274,7 +304,7 @@ struct CarRacer {
       .onClick(() => {
         if (!this.gameOver && !this.showOverlay) {
           this.moveLeft();
-          vibrate(8);
+          playClick();
         }
       })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
@@ -282,7 +312,7 @@ struct CarRacer {
       .onClick(() => {
         if (!this.gameOver && !this.showOverlay) {
           this.moveRight();
-          vibrate(8);
+          playClick();
         }
       })
     }

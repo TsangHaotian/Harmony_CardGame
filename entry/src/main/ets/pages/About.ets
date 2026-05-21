@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -57,20 +86,18 @@ struct About {
                 Text('— 游戏列表 —').fontSize(14).fontColor('#FF6B35').fontWeight(FontWeight.Bold)
                   .width('100%').textAlign(TextAlign.Center).margin({ bottom: 5 })
 
+                this.Entry('五子棋', 'AI对战五子棋')
                 this.Entry('2048', '经典数字合并')
                 this.Entry('扫雷', '经典逻辑推理')
+                this.Entry('飞机大战', '射击敌机')
                 this.Entry('贪吃蛇', '经典贪吃游戏')
+                this.Entry('围棋', '经典围棋对弈')
+                this.Entry('吃豆人', '经典迷宫吃豆')
                 this.Entry('俄罗斯方块', '经典下落拼图')
                 this.Entry('打砖块', '经典弹球打砖')
                 this.Entry('井字棋', 'AI对战三子棋')
-                this.Entry('五子棋', 'AI对战五子棋')
-                this.Entry('围棋', '经典围棋对弈')
-                this.Entry('游戏4', '预留新游戏')
-                this.Entry('游戏5', '预留新游戏')
-                this.Entry('游戏6', '预留新游戏')
-                this.Entry('游戏7', '预留新游戏')
                 this.Entry('赛车大赛', '躲避障碍物')
-                this.Entry('飞机大战', '射击敌机')
+                this.Entry('华容道', '经典滑块解谜')
               }
               .width('100%')
               }
@@ -140,16 +167,16 @@ struct About {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { vibrate(8); })
+      .onClick(() => { playClick(); })
     }
     .width(140).height(140)
   }
@@ -161,7 +188,7 @@ struct About {
       Button() { Text('BACK').fontSize(11).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .width(64).height(28).backgroundColor('#4488CC').borderRadius(14).margin({ left: 16 })
       .onClick(() => {
-        vibrate(10);
+        playClick();
         try { this.getUIContext().getRouter().back(); } catch (_) {}
       })
     }
@@ -170,10 +197,10 @@ struct About {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => { vibrate(10); })
+      .onClick(() => { playClick(); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
-      .onClick(() => { vibrate(10); })
+      .onClick(() => { playClick(); })
     }
   }
 

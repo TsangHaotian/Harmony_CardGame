@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -76,14 +105,15 @@ struct Snake {
     let ate = newHead === this.food;
     this.snake.push(newHead);
     if (!ate) { this.snake.shift(); }
-    else { this.score++; vibrate(15); this.spawnFood(); }
+    else { this.score++; playClick(); this.spawnFood(); }
     this.snake = [...this.snake];
     this.syncFlat();
   }
 
   endGame(): void {
     this.gameOver = true;
-    vibrate(300);
+    playClick();
+      try { vibrator.vibrate(300); } catch (_) {}
     this.lastScore = this.score;
     if (this.score > this.bestScore) { this.bestScore = this.score; }
     setTimeout(() => { this.showOverlay = true; }, 200);
@@ -226,16 +256,16 @@ struct Snake {
     Stack() {
       Button() { Image($r('app.media.icon_up')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: -42 })
-      .onClick(() => { this.changeDirection(0); vibrate(8); })
+      .onClick(() => { this.changeDirection(0); playClick(); })
       Button() { Image($r('app.media.icon_down')).width(60).height(60) }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0).offset({ y: 42 })
-      .onClick(() => { this.changeDirection(2); vibrate(8); })
+      .onClick(() => { this.changeDirection(2); playClick(); })
       Button() { Image($r('app.media.icon_left')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: -42 })
-      .onClick(() => { this.changeDirection(3); vibrate(8); })
+      .onClick(() => { this.changeDirection(3); playClick(); })
       Button() { Image($r('app.media.icon_right')).width(60).height(60) }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0).offset({ x: 42 })
-      .onClick(() => { this.changeDirection(1); vibrate(8); })
+      .onClick(() => { this.changeDirection(1); playClick(); })
     }
     .width(140).height(140)
   }
@@ -257,14 +287,14 @@ struct Snake {
   @Builder ActionButtonLayout() {
     Row() {
       Stack() { Circle().width(56).height(56).fill('#4488CC'); Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
-      .onClick(() => { this.paused = !this.paused; vibrate(10); })
+      .onClick(() => { this.paused = !this.paused; playClick(); })
       Stack() { Circle().width(64).height(64).fill('#CC4444'); Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold) }
       .margin({ left: 12 })
       .onClick(() => {
         if (!this.gameOver && !this.showOverlay && this.gameTimer > 0) {
           clearInterval(this.gameTimer);
           this.gameTimer = setInterval(() => { this.tick(); }, 80);
-          vibrate(15);
+          playClick();
         }
       })
     }

@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 
@@ -25,10 +54,12 @@ struct Index {
     { title: '飞机大战', page: 'pages/PlaneBattle' },
     { title: '贪吃蛇', page: 'pages/Snake' },
     { title: '围棋', page: 'pages/Go' },
+    { title: '吃豆人', page: 'pages/Pacman' },
     { title: '俄罗斯方块', page: 'pages/Tetris' },
     { title: '打砖块', page: 'pages/Breakout' },
     { title: '井字棋', page: 'pages/TicTacToe' },
     { title: '赛车大赛', page: 'pages/CarRacer' },
+    { title: '华容道', page: 'pages/Klotski' },
     { title: '关于', page: 'pages/About' }
   ];
 
@@ -45,7 +76,7 @@ struct Index {
   moveUp(): void {
     if (this.selectedIndex > 0) {
       this.selectedIndex--;
-      vibrate(8);
+      playClick();
       this.autoScroll();
     }
   }
@@ -54,19 +85,19 @@ struct Index {
     if (this.selectedIndex < this.games.length - 1) {
       this.selectedIndex++;
       this.autoScroll();
-      vibrate(8);
+      playClick();
     }
   }
 
   selectGame(): void {
-    vibrate(15);
+    playClick();
     try {
       this.getUIContext().getRouter().pushUrl({ url: this.games[this.selectedIndex].page });
     } catch (_) {}
   }
 
   goBack(): void {
-    vibrate(10);
+    playClick();
     try {
       this.getUIContext().getRouter().back();
     } catch (_) {}
@@ -204,13 +235,13 @@ struct Index {
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
 .offset({ x: -42 })
-      .onClick(() => { if (this.selectedIndex > 0) { this.selectedIndex = 0; vibrate(8); this.autoScroll(); } })
+      .onClick(() => { if (this.selectedIndex > 0) { this.selectedIndex = 0; playClick(); this.autoScroll(); } })
       Button() {
         Image($r('app.media.icon_right')).width(60).height(60)
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
 .offset({ x: 42 })
-      .onClick(() => { if (this.selectedIndex < this.games.length - 1) { this.selectedIndex = this.games.length - 1; vibrate(8); this.autoScroll(); } })
+      .onClick(() => { if (this.selectedIndex < this.games.length - 1) { this.selectedIndex = this.games.length - 1; playClick(); this.autoScroll(); } })
     }
     .width(140).height(140)
   }
@@ -238,7 +269,7 @@ struct Index {
         Circle().width(56).height(56).fill('#4488CC')
         Text('B').fontSize(22).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
-      .onClick(() => { vibrate(10); })
+      .onClick(() => { playClick(); })
 
       Stack() {
         Circle().width(64).height(64).fill('#CC4444')

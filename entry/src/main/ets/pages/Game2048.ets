@@ -1,9 +1,38 @@
 import vibrator from '@ohos.vibrator';
+import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 
 function vibrate(ms: number): void {
   try {
     vibrator.vibrate(ms);
   } catch (_) {}
+}
+
+let soundPool: media.SoundPool | null = null;
+let soundId: number = 0;
+let soundReady: boolean = false;
+
+function initSound(): void {
+  try {
+    let info: audio.AudioRendererInfo = { usage: audio.StreamUsage.STREAM_USAGE_MUSIC, rendererFlags: 0 };
+    media.createSoundPool(3, info).then((pool: media.SoundPool) => {
+      soundPool = pool;
+      let ctx = getContext();
+      let rawFd = ctx.resourceManager.getRawFdSync('click.mp3');
+      pool.load(rawFd.fd, rawFd.offset, rawFd.length).then((id: number) => {
+        soundId = id;
+        soundReady = true;
+      });
+    });
+  } catch (_) {}
+}
+initSound();
+
+function playClick(): void {
+  try { vibrator.vibrate(8); } catch (_) {}
+  if (soundReady && soundPool) {
+    try { soundPool.play(soundId, { loop: 0, leftVolume: 1.0, rightVolume: 1.0 }); } catch (_) {}
+  }
 }
 
 @Entry
@@ -202,14 +231,15 @@ struct Game2048 {
     if (changed) {
       this.prevTiles = [...this.flatTiles];
       this.prevScore = this.score;
-      vibrate(15);
+      playClick();
       this.newTileIndex = -1;
       this.addRandomTile();
       this.syncFlatTiles();
 
       if (!this.hasWon && this.hasTileValue(2048)) {
         this.hasWon = true;
-        vibrate(200);
+        playClick();
+          try { vibrator.vibrate(200); } catch (_) {}
         setTimeout(() => {
           this.showOverlay = true;
         }, 200);
@@ -217,7 +247,8 @@ struct Game2048 {
       if (this.isGameOver()) {
         this.lastScore = this.score;
         if (this.score > this.bestScore) { this.bestScore = this.score; }
-        vibrate(300);
+        playClick();
+          try { vibrator.vibrate(300); } catch (_) {}
         setTimeout(() => {
           this.showOverlay = true;
         }, 200);
@@ -481,25 +512,25 @@ struct Game2048 {
       }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0)
       .offset({ y: -42 })
-      .onClick(() => { this.tryMove('up'); vibrate(8); })
+      .onClick(() => { this.tryMove('up'); playClick(); })
       Button() {
         Image($r('app.media.icon_down')).width(60).height(60)
       }
       .width(76).height(58).backgroundColor('transparent').borderRadius(0)
       .offset({ y: 42 })
-      .onClick(() => { this.tryMove('down'); vibrate(8); })
+      .onClick(() => { this.tryMove('down'); playClick(); })
       Button() {
         Image($r('app.media.icon_left')).width(60).height(60)
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
       .offset({ x: -42 })
-      .onClick(() => { this.tryMove('left'); vibrate(8); })
+      .onClick(() => { this.tryMove('left'); playClick(); })
       Button() {
         Image($r('app.media.icon_right')).width(60).height(60)
       }
       .width(58).height(76).backgroundColor('transparent').borderRadius(0)
       .offset({ x: 42 })
-      .onClick(() => { this.tryMove('right'); vibrate(8); })
+      .onClick(() => { this.tryMove('right'); playClick(); })
     }
     .width(140).height(140)
   }
@@ -534,7 +565,7 @@ struct Game2048 {
           this.flatTiles = this.prevTiles;
           this.score = this.prevScore;
           this.prevTiles = [];
-          vibrate(10);
+          playClick();
         }
       })
 
@@ -543,7 +574,7 @@ struct Game2048 {
         Text('A').fontSize(24).fontColor('#FFFFFF').fontWeight(FontWeight.Bold)
       }
       .margin({ left: 12 })
-      .onClick(() => { this.initGame(); vibrate(15); })
+      .onClick(() => { this.initGame(); playClick(); })
     }
   }
 
