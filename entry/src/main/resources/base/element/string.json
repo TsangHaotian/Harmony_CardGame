@@ -2,11 +2,11 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "一款鸿蒙怀旧掌机风格的多功能娱乐应用，集成了12款经典益智互动玩法"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "一款鸿蒙怀旧掌机风格的多功能娱乐应用，集成了12款经典益智互动玩法"
     },
     {
       "name": "EntryAbility_label",
@@ -54,7 +54,7 @@
     },
     {
       "name": "widget_desc",
-      "value": "Play 2048 and Minesweeper on your desktop"
+      "value": "怀旧掌机风格娱乐应用，集成经典益智互动玩法"
     },
     {
       "name": "widget_display_name",

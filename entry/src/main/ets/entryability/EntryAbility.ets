@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { preferences } from '@kit.ArkData';
 
 const DOMAIN = 0x0000;
 
@@ -18,7 +19,7 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
     try {
@@ -55,6 +56,17 @@ export default class EntryAbility extends UIAbility {
     PersistentStorage.persistProp('BestGame5', 0);
     PersistentStorage.persistProp('BestGame6', 0);
     PersistentStorage.persistProp('BestGame7', 0);
+
+    let needPrivacy: boolean = true;
+    try {
+      let store = await preferences.getPreferences(this.context, 'privacy_store');
+      let agreed: preferences.ValueType = await store.get('agreedPrivacy', false);
+      if (agreed as boolean) {
+        needPrivacy = false;
+      }
+    } catch (_) {}
+
+    AppStorage.setOrCreate('needPrivacy', needPrivacy);
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
