@@ -6,9 +6,9 @@
 
 | 主菜单 | 游戏界面 |
 |:-:|:-:|
-| ![](resized-Screenshot_2026-05-21T212023.png) | ![](resized-Screenshot_2026-05-21T212034.png) |
+| ![](screenshot1.png) | ![](screenshot2.png) |
 | **游戏界面** | **游戏界面** |
-| ![](resized-Screenshot_2026-05-21T212038.png) | ![](resized-Screenshot_2026-05-21T212041.png) |
+| ![](screenshot3.png) | ![](screenshot4.png) |
 
 ## 功能
 
